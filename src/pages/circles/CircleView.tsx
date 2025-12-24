@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import CalendarView from './components/CalendarView';
 import DashboardView from './components/DashboardView';
+import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
 
 interface Circle {
   id: number;
@@ -228,20 +229,35 @@ export default function CircleView() {
             {/* Settings Button */}
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-sm border border-blue-50 hover:shadow-md transition-shadow"
-              style={{ color: COLORS.primary }}
+              className="w-11 h-11 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-110 hover:shadow-lg"
+              style={{
+                color: 'white',
+                backgroundColor: COLORS.primary,
+                boxShadow: '0 4px 12px rgba(0, 74, 173, 0.3)'
+              }}
+              title="Settings"
             >
-              <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.62l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.48.1.62l2.03 1.58c-.05.3-.07.62-.07.94 0 .33.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.62l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.48-.1-.62l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
               </svg>
             </button>
           </div>
 
+          {/* Settings Menu */}
+          {showSettings && circle && (
+            <CircleSettingsMenu
+              circleId={circle.id}
+              circleName={circle.name}
+              isModerator={circle.is_moderator}
+              onClose={() => setShowSettings(false)}
+            />
+          )}
+
           {/* Announcements Section */}
           <div className="mb-6 px-5">
             <div className="flex items-center space-x-2 mb-3">
-              <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
-                <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+              <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21.88 8.61c.1.51.12 1.02.12 1.53 0 .51-.02 1.02-.12 1.53-.98 5.19-5.69 9.08-11.17 9.08-1.08 0-2.13-.14-3.15-.42l-2.88 2.88c-.24.24-.64.24-.88 0-.24-.24-.24-.64 0-.88l2.88-2.88c-2.78-1.93-4.65-5.05-4.65-8.63 0-.51.02-1.02.12-1.53.98-5.19 5.69-9.08 11.17-9.08 1.08 0 2.13.14 3.15.42l2.88-2.88c.24-.24.64-.24.88 0 .24.24.24.64 0 .88l-2.88 2.88c2.78 1.93 4.65 5.05 4.65 8.63zm-11.88-6.46c-4.27 0-8.02 3.15-8.66 7.35-.07.41-.11.83-.11 1.25 0 .42.04.84.11 1.25.64 4.2 4.39 7.35 8.66 7.35s8.02-3.15 8.66-7.35c.07-.41.11-.83.11-1.25 0-.42-.04-.84-.11-1.25-.64-4.2-4.39-7.35-8.66-7.35zm0 4.5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z" />
               </svg>
               <h2 className="text-base font-bold text-gray-900">Announcements</h2>
             </div>
