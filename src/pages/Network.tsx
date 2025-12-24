@@ -129,9 +129,9 @@ export default function Network() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6">
         {activeTab === 'connect' && (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredEntrepreneurs.length > 0 ? (
               filteredEntrepreneurs.map(user => (
                 <NetworkCard
@@ -163,7 +163,7 @@ export default function Network() {
         )}
 
         {activeTab === 'mentors' && (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredMentors.length > 0 ? (
               filteredMentors.map(user => (
                 <NetworkCard
