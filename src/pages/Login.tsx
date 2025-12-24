@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth.ts';
 import { useNotification } from '../context/NotificationContext';
 import { COLORS } from '../utils/colors';
 
@@ -56,7 +56,8 @@ export default function Login() {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-br from-[#004aad] via-[#0056c7] to-[#004aad]"
+      className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-center px-8 py-12 overflow-y-auto"
+      style={{ backgroundColor: COLORS.primary }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           document.getElementById('email-input')?.blur();
@@ -65,44 +66,37 @@ export default function Login() {
       }}
     >
       {/* Logo Section */}
-      <div className="flex flex-col items-center mb-10 mt-12">
+      <div className="flex flex-col items-center mb-10">
         <div 
-          className="w-[220px] h-[220px] rounded-full bg-white flex items-center justify-center shadow-lg mb-5"
-          style={{ boxShadow: '0 5px 10px rgba(0,0,0,0.1)' }}
+          className="w-[160px] h-[160px] rounded-full bg-white flex items-center justify-center mb-6"
         >
-          <h1 className="text-[55px] font-bold" style={{ color: COLORS.primary }}>
+          <h1 className="text-[44px] font-bold" style={{ color: COLORS.primary }}>
             Circl.
           </h1>
         </div>
-        <h2 
-          className="text-2xl font-bold text-white text-center mb-8"
-          style={{ textShadow: '0 2px 3px rgba(0,0,0,0.2)' }}
-        >
+        <h2 className="text-xl font-bold text-white text-center">
           Where Ideas Go Around
         </h2>
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-md px-10 mb-10">
+      <div className="w-full max-w-2xl px-6">
         {/* Join Circl Button */}
         <button
           onClick={handleJoinCircl}
-          className="w-full py-[18px] mb-6 text-2xl font-bold rounded-2xl transition-transform active:scale-95"
+          className="w-full py-4 mb-6 text-xl font-bold rounded-xl transition-opacity hover:opacity-90"
           style={{
             backgroundColor: '#ffde59',
             color: COLORS.primary,
-            boxShadow: '0 3px 5px rgba(0,0,0,0.1)',
           }}
         >
           Join Circl
         </button>
 
-        {/* Login Form */}
-        <div 
-          className="bg-white/15 backdrop-blur-sm rounded-3xl p-8 border border-white/20"
-          style={{ boxShadow: '0 5px 10px rgba(0,0,0,0.1)' }}
-        >
-          <form onSubmit={handleLogin} className="space-y-[18px]">
+        {/* Form Container */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 shadow-lg">
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
             {/* Email Input */}
             <input
               id="email-input"
@@ -110,11 +104,7 @@ export default function Login() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-[18px] py-[18px] bg-white/95 rounded-2xl border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
-              style={{
-                color: COLORS.primary,
-                boxShadow: '0 2px 3px rgba(0,0,0,0.05)',
-              }}
+              className="w-full px-5 py-4 bg-gray-300 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-800 placeholder-gray-500"
               autoCapitalize="none"
               autoComplete="email"
             />
@@ -126,11 +116,7 @@ export default function Login() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-[18px] py-[18px] bg-white/95 rounded-2xl border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
-              style={{
-                color: COLORS.primary,
-                boxShadow: '0 2px 3px rgba(0,0,0,0.05)',
-              }}
+              className="w-full px-5 py-4 bg-gray-300 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-800 placeholder-gray-500"
               autoComplete="current-password"
             />
 
@@ -138,11 +124,10 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-[18px] text-[22px] font-bold rounded-2xl transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 text-xl font-bold rounded-xl transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                backgroundColor: '#ffde59',
+                backgroundColor: 'white',
                 color: COLORS.primary,
-                boxShadow: '0 3px 5px rgba(0,0,0,0.1)',
               }}
             >
               {isLoading ? 'Logging in...' : 'Login'}
@@ -153,8 +138,7 @@ export default function Login() {
         {/* Forgot Password Link */}
         <button
           onClick={() => setShowForgotPassword(true)}
-          className="w-full mt-6 text-base font-medium text-white/90 underline hover:text-white transition-colors"
-          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}
+          className="w-full mt-6 text-base font-medium text-white underline hover:opacity-80 transition-opacity"
         >
           Forgot your password?
         </button>
