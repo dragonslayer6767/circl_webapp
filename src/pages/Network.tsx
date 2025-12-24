@@ -70,7 +70,43 @@ export default function Network() {
     }
   ];
 
-  const mockConnections: NetworkUser[] = [];
+  const mockConnections: NetworkUser[] = [
+    {
+      user_id: 100,
+      email: 'sarah.chen@example.com',
+      name: 'Sarah Chen',
+      businessIndustry: 'Technology',
+      tags: ['AI', 'SaaS']
+    },
+    {
+      user_id: 101,
+      email: 'james.wilson@example.com',
+      name: 'James Wilson',
+      businessIndustry: 'E-commerce',
+      tags: ['Retail', 'Marketing']
+    },
+    {
+      user_id: 102,
+      email: 'priya.patel@example.com',
+      name: 'Priya Patel',
+      businessIndustry: 'Healthcare',
+      tags: ['Telemedicine', 'Innovation']
+    },
+    {
+      user_id: 103,
+      email: 'alex.rodriguez@example.com',
+      name: 'Alex Rodriguez',
+      businessIndustry: 'Finance',
+      tags: ['Fintech', 'Investment']
+    },
+    {
+      user_id: 104,
+      email: 'emma.thompson@example.com',
+      name: 'Emma Thompson',
+      businessIndustry: 'Education',
+      tags: ['EdTech', 'Learning']
+    }
+  ];
 
   const handleConnect = (userId: number) => {
     console.log('Connect with user:', userId);
@@ -225,36 +261,81 @@ export default function Network() {
                 {mockConnections.map(user => (
                   <div
                     key={user.user_id}
-                    className="bg-white border border-gray-200 rounded-xl p-4 flex items-center space-x-4 hover:shadow-md transition-shadow"
+                    className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow"
                   >
-                    {user.profileImageURL ? (
-                      <img
-                        src={user.profileImageURL}
-                        alt={user.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div 
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{ backgroundColor: COLORS.yellow }}
-                      >
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{user.name}</h4>
-                      {user.businessIndustry && (
-                        <p className="text-sm text-gray-600">{user.businessIndustry}</p>
+                    <div className="flex items-start space-x-4">
+                      {user.profileImageURL ? (
+                        <img
+                          src={user.profileImageURL}
+                          alt={user.name}
+                          className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div 
+                          className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
+                          style={{ backgroundColor: COLORS.yellow }}
+                        >
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
                       )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">{user.name}</h3>
+                        <div className="flex items-center space-x-1 text-blue-600 mb-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                            <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                          </svg>
+                          <span className="text-sm font-medium">Professional</span>
+                        </div>
+                        <div className="flex items-center space-x-1 text-gray-500 mb-3">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                          </svg>
+                          <span className="text-sm">Network</span>
+                        </div>
+                        
+                        {/* Shared Interests */}
+                        <div className="mb-3">
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                            Shared Interests
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {user.tags && user.tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {user.businessIndustry && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                {user.businessIndustry}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Mutual Connections */}
+                        <div className="flex items-center space-x-1 text-orange-500">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                          </svg>
+                          <span className="text-sm font-medium">Mutual</span>
+                        </div>
+                      </div>
+                      
+                      {/* Chat Button */}
+                      <button
+                        className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white hover:opacity-90 transition-opacity"
+                        style={{ backgroundColor: COLORS.primary }}
+                        title="Chat"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                      </button>
                     </div>
-                    <button
-                      className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100"
-                      title="Message"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                      </svg>
-                    </button>
                   </div>
                 ))}
               </div>
