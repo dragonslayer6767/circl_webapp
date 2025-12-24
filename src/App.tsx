@@ -26,6 +26,7 @@ import ContactSupport from './pages/settings/ContactSupport';
 import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
 import Circles from './pages/Circles';
+import CircleView from './pages/circles/CircleView';
 import './App.css';
 
 // Create a client for React Query
@@ -118,6 +119,15 @@ function App() {
                   element={
                     <MainLayout>
                       <Circles />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/circles/:circleId"
+                  element={
+                    <MainLayout>
+                      <CircleView />
                     </MainLayout>
                   }
                 />
