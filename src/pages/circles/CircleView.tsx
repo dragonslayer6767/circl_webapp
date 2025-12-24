@@ -33,7 +33,6 @@ interface Thread {
 interface Channel {
   id: number;
   name: string;
-  description: string;
   category: string;
 }
 
@@ -116,8 +115,7 @@ export default function CircleView() {
       const mockChannels: Channel[] = [
         {
           id: 1,
-          name: '#Welcome',
-          description: 'Tap to join conversation',
+          name: 'Welcome',
           category: 'General'
         }
       ];
@@ -237,41 +235,27 @@ export default function CircleView() {
             </button>
           </div>
 
-          {/* Moderator Badge */}
-          {circle.is_moderator && (
-            <div className="flex justify-center mb-4">
-              <div 
-                className="flex items-center space-x-2 px-3 py-1.5 rounded-full border"
-                style={{ backgroundColor: `${COLORS.primary}10`, borderColor: `${COLORS.primary}30`, color: COLORS.primary }}
-              >
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
-                </svg>
-                <span className="text-xs font-medium">Circle Moderator</span>
-              </div>
-            </div>
-          )}
-
           {/* Announcements Section */}
-          <div className="mb-4">
-            <div className="flex items-center space-x-3 px-5 py-3 mb-3 bg-white rounded-t-2xl">
+          <div className="mb-6 px-5">
+            <div className="flex items-center space-x-2 mb-3">
               <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
               </svg>
-              <h2 className="text-lg font-bold text-gray-900">Announcements</h2>
+              <h2 className="text-base font-bold text-gray-900">Announcements</h2>
             </div>
 
             {announcements.map((announcement) => (
               <div 
                 key={announcement.id}
-                className="bg-blue-600 rounded-2xl px-5 py-4 mb-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                className="rounded-2xl px-5 py-4 cursor-pointer hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: COLORS.primary }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="text-white font-semibold">{announcement.title}</h3>
-                    <p className="text-white text-xs mt-1">By {announcement.created_by} · {announcement.created_at}</p>
+                    <h3 className="text-white font-semibold text-base">{announcement.title}</h3>
+                    <p className="text-white text-sm mt-1 opacity-90">By {announcement.created_by} · {announcement.created_at}</p>
                   </div>
-                  <svg className="w-5 h-5 text-white flex-shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-white flex-shrink-0 ml-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -280,15 +264,16 @@ export default function CircleView() {
           </div>
 
           {/* Circle Threads Section */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between px-5 mb-3">
+          <div className="mb-6">
+            <div className="flex items-center justify-between px-5 mb-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Circle Threads</h2>
-                <p className="text-sm font-medium text-gray-500">Share ideas and discussions</p>
+                <h2 className="text-base font-bold text-gray-900">Circle Threads</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Share ideas and discussions</p>
               </div>
               <button
                 onClick={() => console.log('Create thread - TODO')}
-                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
+                className="flex items-center space-x-1.5 text-white font-semibold px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all"
+                style={{ backgroundColor: COLORS.primary }}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -298,43 +283,43 @@ export default function CircleView() {
             </div>
 
             {/* Threads Horizontal Scroll */}
-            <div className="overflow-x-auto pb-3 -mx-5 px-5">
+            <div className="overflow-x-auto pb-4 -mx-5 px-5">
               <div className="flex space-x-3">
                 {threads.length > 0 ? (
                   threads.map((thread) => (
                     <div 
                       key={thread.id}
-                      className="flex-shrink-0 w-72 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                      className="flex-shrink-0 w-64 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                     >
-                      <div className="flex items-center space-x-3 mb-3">
+                      <div className="flex items-center space-x-2.5 mb-3">
                         <div 
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                          className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
                           style={{ backgroundColor: COLORS.primary }}
                         >
                           {thread.author.charAt(0)}
                         </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900">{thread.author}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm text-gray-900">{thread.author}</div>
                           <div className="text-xs text-gray-500">{thread.created_at}</div>
                         </div>
                       </div>
-                      <p className="text-gray-700 mb-3">{thread.content}</p>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <button className="flex items-center space-x-1 hover:text-blue-600">
+                      <p className="text-gray-800 text-sm mb-4">{thread.content}</p>
+                      <div className="flex items-center space-x-5 text-sm text-gray-500">
+                        <button className="flex items-center space-x-1.5 hover:text-red-500 transition-colors">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>
-                          <span>{thread.likes}</span>
+                          <span className="text-xs">{thread.likes}</span>
                         </button>
-                        <button className="flex items-center space-x-1 hover:text-blue-600">
+                        <button className="flex items-center space-x-1.5 hover:text-blue-600 transition-colors">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                           </svg>
-                          <span>{thread.comments}</span>
+                          <span className="text-xs">{thread.comments}</span>
                         </button>
-                        <button className="ml-auto hover:text-blue-600">
+                        <button className="ml-auto hover:text-blue-600 transition-colors">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                           </svg>
                         </button>
                       </div>
@@ -366,40 +351,40 @@ export default function CircleView() {
           <div className="px-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Channels</h2>
-                <p className="text-sm font-medium text-gray-500">Join conversations by topic</p>
+                <h2 className="text-base font-bold text-gray-900">Channels</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Join conversations by topic</p>
               </div>
               <div 
-                className="px-2.5 py-1 rounded-full text-xs font-medium"
-                style={{ backgroundColor: `${COLORS.primary}10`, color: COLORS.primary }}
+                className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                style={{ backgroundColor: `${COLORS.primary}15`, color: COLORS.primary }}
               >
                 {channels.length} channels
               </div>
             </div>
 
             {/* Channel Categories */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <h3 className="text-base font-semibold text-gray-700 mb-2">General</h3>
+                <h3 className="text-sm font-semibold text-gray-600 mb-2.5">General</h3>
                 {channels.map((channel) => (
                   <button
                     key={channel.id}
                     onClick={() => navigate(`/circles/${circleId}/channel/${channel.id}`)}
-                    className="w-full flex items-center justify-between bg-white rounded-xl px-4 py-3.5 mb-2 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all group"
+                    className="w-full flex items-center justify-between bg-white rounded-xl px-4 py-3 mb-2 hover:bg-gray-50 transition-colors group"
                   >
                     <div className="flex items-center space-x-3">
                       <div 
-                        className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm"
-                        style={{ backgroundColor: `${COLORS.primary}15`, color: COLORS.primary }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-sm"
+                        style={{ backgroundColor: `${COLORS.primary}`, color: 'white' }}
                       >
                         #
                       </div>
                       <div className="text-left">
-                        <div className="font-semibold text-gray-900 group-hover:text-blue-600">{channel.name}</div>
-                        <div className="text-xs text-gray-500">{channel.description}</div>
+                        <div className="font-semibold text-sm text-gray-900">#{channel.name}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">Tap to join conversation</div>
                       </div>
                     </div>
-                    <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
