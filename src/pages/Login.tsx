@@ -1,18 +1,16 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.ts';
 import { useNotification } from '../context/NotificationContext';
 import { COLORS } from '../utils/colors';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('circltest@gmail.com');
+  const [password, setPassword] = useState('123456789');
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   
   const navigate = useNavigate();
-  const { login } = useAuth();
   const { addNotification } = useNotification();
 
   const handleLogin = async (e: FormEvent) => {
@@ -25,6 +23,25 @@ export default function Login() {
 
     setIsLoading(true);
     
+    // PLACEHOLDER: Bypass authentication for testing
+    // TODO: Re-enable actual authentication when backend is ready
+    
+    // Simulate loading delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Set mock user data in localStorage
+    localStorage.setItem('auth_token', 'mock-token-12345');
+    localStorage.setItem('user_id', '1');
+    localStorage.setItem('email', email);
+    localStorage.setItem('fullname', 'Test User');
+    
+    setIsLoading(false);
+    addNotification('Welcome back!', 'success');
+    
+    // Use window.location for full page reload to update AuthContext
+    window.location.href = '/forum';
+
+    /* ACTUAL AUTHENTICATION (currently disabled):
     try {
       await login(email.trim().toLowerCase(), password);
       addNotification('Welcome back!', 'success');
@@ -34,6 +51,7 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
+    */
   };
 
   const handleForgotPassword = async (e: FormEvent) => {

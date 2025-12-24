@@ -1,0 +1,59 @@
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { COLORS } from '../../utils/colors';
+
+export default function Header() {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const handleProfile = () => {
+    setShowDropdown(false);
+    navigate('/profile');
+  };
+
+  return (
+    <header 
+      className="fixed top-0 left-0 right-0 z-50"
+      style={{ backgroundColor: COLORS.primary }}
+    >
+      <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between shadow-sm">
+        {/* Logo */}
+        <div 
+          className="flex items-center cursor-pointer"
+          onClick={() => navigate('/forum')}
+        >
+          <span className="text-2xl font-bold text-white hidden sm:block">
+            Circl.
+          </span>
+        </div>
+
+
+      </div>
+    </header>
+  );
+}

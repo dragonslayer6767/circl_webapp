@@ -2,6 +2,7 @@ export const COLORS = {
   primary: '#004aad',      // Main blue from iOS app
   primaryDark: '#001a3d',  // Dark blue
   secondary: '#0066ff',    // Light blue
+  yellow: '#ffde59',       // Yellow for buttons
   danger: '#ff3333',       // Red for delete/block
   success: '#00cc00',      // Green for success
   warning: '#ffaa00',      // Orange for warnings
