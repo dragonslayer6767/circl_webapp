@@ -25,6 +25,7 @@ import Tutorial from './pages/settings/Tutorial';
 import ContactSupport from './pages/settings/ContactSupport';
 import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
+import Circles from './pages/Circles';
 import './App.css';
 
 // Create a client for React Query
@@ -110,6 +111,15 @@ function App() {
                 <Route
                   path="/chat/:userId"
                   element={<ChatView />}
+                />
+
+                <Route
+                  path="/circles"
+                  element={
+                    <MainLayout>
+                      <Circles />
+                    </MainLayout>
+                  }
                 />
 
                 {/* TEMPORARY: Settings and sub-routes are public for development */}
@@ -213,17 +223,6 @@ function App() {
                 />
                 
                 {/* Protected Routes */}
-                
-                <Route
-                  path="/circles"
-                  element={
-                    <ProtectedRoute>
-                      <MainLayout>
-                        <PlaceholderPage title="Circles" />
-                      </MainLayout>
-                    </ProtectedRoute>
-                  }
-                />
                 
                 <Route
                   path="/more"
