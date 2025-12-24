@@ -65,9 +65,10 @@ export default function Messages() {
 
   const handleOpenChat = () => {
     if (selectedUser) {
-      // Navigate to chat view with selected user
-      console.log('Opening chat with:', selectedUser);
-      // TODO: Implement navigation to chat view
+      navigate(`/chat/${selectedUser.id}`);
+      setSearchText('');
+      setSuggestedUsers([]);
+      setSelectedUser(null);
     }
   };
 

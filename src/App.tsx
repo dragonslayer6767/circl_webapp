@@ -11,6 +11,20 @@ import Forum from './pages/Forum';
 import Network from './pages/Network';
 import Messages from './pages/Messages';
 import ChatView from './pages/ChatView';
+import GrowthHub from './pages/GrowthHub';
+import Settings from './pages/Settings';
+import BecomeMentor from './pages/settings/BecomeMentor';
+import ChangePassword from './pages/settings/ChangePassword';
+import BlockedUsers from './pages/settings/BlockedUsers';
+import DeleteAccount from './pages/settings/DeleteAccount';
+import SuggestFeature from './pages/settings/SuggestFeature';
+import ReportProblem from './pages/settings/ReportProblem';
+import TermsOfService from './pages/settings/TermsOfService';
+import PrivacyPolicy from './pages/settings/PrivacyPolicy';
+import Tutorial from './pages/settings/Tutorial';
+import ContactSupport from './pages/settings/ContactSupport';
+import Profile from './pages/Profile';
+import BusinessProfile from './pages/BusinessProfile';
 import './App.css';
 
 // Create a client for React Query
@@ -85,8 +99,117 @@ function App() {
                 />
 
                 <Route
+                  path="/growth"
+                  element={
+                    <MainLayout>
+                      <GrowthHub />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
                   path="/chat/:userId"
                   element={<ChatView />}
+                />
+
+                {/* TEMPORARY: Settings and sub-routes are public for development */}
+                <Route
+                  path="/settings"
+                  element={
+                    <MainLayout>
+                      <Settings />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/become-mentor"
+                  element={
+                    <MainLayout>
+                      <BecomeMentor />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/change-password"
+                  element={
+                    <MainLayout>
+                      <ChangePassword />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/blocked-users"
+                  element={
+                    <MainLayout>
+                      <BlockedUsers />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/delete-account"
+                  element={
+                    <MainLayout>
+                      <DeleteAccount />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/suggest-feature"
+                  element={
+                    <MainLayout>
+                      <SuggestFeature />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/report-problem"
+                  element={
+                    <MainLayout>
+                      <ReportProblem />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/terms"
+                  element={
+                    <MainLayout>
+                      <TermsOfService />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/privacy"
+                  element={
+                    <MainLayout>
+                      <PrivacyPolicy />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/tutorial"
+                  element={
+                    <MainLayout>
+                      <Tutorial />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/settings/contact-support"
+                  element={
+                    <MainLayout>
+                      <ContactSupport />
+                    </MainLayout>
+                  }
                 />
                 
                 {/* Protected Routes */}
@@ -116,22 +239,18 @@ function App() {
                 <Route
                   path="/profile"
                   element={
-                    <ProtectedRoute>
-                      <MainLayout>
-                        <PlaceholderPage title="Profile" />
-                      </MainLayout>
-                    </ProtectedRoute>
+                    <MainLayout>
+                      <Profile />
+                    </MainLayout>
                   }
                 />
-                
+
                 <Route
-                  path="/settings"
+                  path="/profile/business"
                   element={
-                    <ProtectedRoute>
-                      <MainLayout>
-                        <PlaceholderPage title="Settings" />
-                      </MainLayout>
-                    </ProtectedRoute>
+                    <MainLayout>
+                      <BusinessProfile />
+                    </MainLayout>
                   }
                 />
                 
