@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Forum from './pages/Forum';
 import Network from './pages/Network';
 import Messages from './pages/Messages';
+import ChatView from './pages/ChatView';
 import './App.css';
 
 // Create a client for React Query
@@ -81,6 +82,11 @@ function App() {
                       <Messages />
                     </MainLayout>
                   }
+                />
+
+                <Route
+                  path="/chat/:userId"
+                  element={<ChatView />}
                 />
                 
                 {/* Protected Routes */}

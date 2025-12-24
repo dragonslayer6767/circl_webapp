@@ -193,6 +193,7 @@ export default function Messages() {
             {mockConversations.map((conversation) => (
               <button
                 key={conversation.userId}
+                onClick={() => navigate(`/chat/${conversation.userId}`)}
                 className="w-full bg-white rounded-2xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02] border border-gray-100 p-5 flex items-start space-x-4 group"
               >
                 {/* Profile Image */}
