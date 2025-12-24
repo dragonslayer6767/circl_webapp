@@ -9,6 +9,7 @@ import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
 import Forum from './pages/Forum';
 import Network from './pages/Network';
+import Messages from './pages/Messages';
 import './App.css';
 
 // Create a client for React Query
@@ -54,7 +55,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
                 
-                {/* TEMPORARY: Forum and Network are public for development */}
+                {/* TEMPORARY: Forum, Network, and Messages are public for development */}
                 <Route
                   path="/forum"
                   element={
@@ -69,6 +70,15 @@ function App() {
                   element={
                     <MainLayout>
                       <Network />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/messages"
+                  element={
+                    <MainLayout>
+                      <Messages />
                     </MainLayout>
                   }
                 />
