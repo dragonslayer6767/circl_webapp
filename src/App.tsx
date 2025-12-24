@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
 import { AuthProvider } from './context/AuthContext';
+import { SidebarProvider } from './context/SidebarContext';
 import { useAuth } from './hooks/useAuth';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
@@ -47,7 +48,8 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <NotificationProvider>
-              <Routes>
+              <SidebarProvider>
+                <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
                 
@@ -123,6 +125,7 @@ function App() {
                 {/* 404 Route */}
                 <Route path="*" element={<Navigate to="/forum" replace />} />
               </Routes>
+              </SidebarProvider>
             </NotificationProvider>
           </AuthProvider>
         </BrowserRouter>

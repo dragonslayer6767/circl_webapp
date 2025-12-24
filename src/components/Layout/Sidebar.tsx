@@ -1,6 +1,7 @@
-import { useState, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useSidebar } from '../../context/SidebarContext';
 import { COLORS } from '../../utils/colors';
 
 interface NavItem {
@@ -11,7 +12,7 @@ interface NavItem {
 }
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, setIsCollapsed } = useSidebar();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();

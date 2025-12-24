@@ -2,12 +2,15 @@ import { ReactNode } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
+import { useSidebar } from '../../context/SidebarContext';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const { isCollapsed } = useSidebar();
+
   return (
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#f9fafb' }}>
       {/* Header - Fixed at top */}
@@ -19,7 +22,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Sidebar />
         
         {/* Main Content Area - Adjust padding based on sidebar */}
-        <main className="flex-1 pt-16 md:pl-64 pb-16 md:pb-0">
+        <main className={`flex-1 pt-16 pb-16 md:pb-0 transition-all duration-300 ${
+          isCollapsed ? 'md:pl-20' : 'md:pl-64'
+        }`}>
           <div className="h-full w-full">
             {children}
           </div>
