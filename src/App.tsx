@@ -8,6 +8,7 @@ import { useAuth } from './hooks/useAuth';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
 import Forum from './pages/Forum';
+import Network from './pages/Network';
 import './App.css';
 
 // Create a client for React Query
@@ -53,7 +54,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
                 
-                {/* TEMPORARY: Forum is public for development */}
+                {/* TEMPORARY: Forum and Network are public for development */}
                 <Route
                   path="/forum"
                   element={
@@ -63,17 +64,16 @@ function App() {
                   }
                 />
                 
-                {/* Protected Routes */}
                 <Route
                   path="/network"
                   element={
-                    <ProtectedRoute>
-                      <MainLayout>
-                        <PlaceholderPage title="Network" />
-                      </MainLayout>
-                    </ProtectedRoute>
+                    <MainLayout>
+                      <Network />
+                    </MainLayout>
                   }
                 />
+                
+                {/* Protected Routes */}
                 
                 <Route
                   path="/circles"
