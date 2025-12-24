@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
+import CalendarView from './components/CalendarView';
+import DashboardView from './components/DashboardView';
 
 interface Circle {
   id: number;
@@ -395,28 +397,23 @@ export default function CircleView() {
         </div>
       )}
 
-      {activeTab === 'dashboard' && (
-        <div className="max-w-6xl mx-auto px-5 py-8 text-center">
-          <div className="bg-white rounded-2xl p-12 shadow-sm">
-            <svg className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
-            </svg>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Coming Soon</h3>
-            <p className="text-gray-600">Circle dashboard features are under development</p>
-          </div>
-        </div>
+      {activeTab === 'dashboard' && circle && (
+        <DashboardView
+          circleId={circle.id}
+          circleName={circle.name}
+          circleIndustry={circle.industry}
+          circlePricing="Free"
+          memberCount={circle.member_count}
+          isModerator={circle.is_moderator}
+        />
       )}
 
-      {activeTab === 'calendar' && (
-        <div className="max-w-6xl mx-auto px-5 py-8 text-center">
-          <div className="bg-white rounded-2xl p-12 shadow-sm">
-            <svg className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-            </svg>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Calendar Coming Soon</h3>
-            <p className="text-gray-600">Circle event calendar is under development</p>
-          </div>
-        </div>
+      {activeTab === 'calendar' && circle && (
+        <CalendarView 
+          circleId={circle.id}
+          circleName={circle.name}
+          isModerator={circle.is_moderator}
+        />
       )}
     </div>
   );
