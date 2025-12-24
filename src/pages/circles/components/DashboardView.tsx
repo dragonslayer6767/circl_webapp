@@ -9,8 +9,8 @@ import {
   TaskPriority,
   ProjectColor
 } from '../../../types/dashboard';
-import KanbanBoard from './KanbanBoard';
-import ProjectGrid from './ProjectGrid';
+import KanbanBoard from './KanbanBoard.tsx';
+import ProjectGrid from './ProjectGrid.tsx';
 
 interface DashboardViewProps {
   circleId: number;
