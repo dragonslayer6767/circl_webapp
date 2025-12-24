@@ -89,7 +89,7 @@ export default function Sidebar() {
 
   return (
     <aside 
-      className={`hidden md:flex md:flex-col fixed left-0 top-16 bottom-0 transition-all duration-300 z-40 ${
+      className={`hidden md:flex md:flex-col fixed left-0 top-16 bottom-0 transition-all duration-300 z-30 border-r border-white/20 ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
       style={{ backgroundColor: COLORS.primary }}

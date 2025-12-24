@@ -60,7 +60,7 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 h-16 md:hidden z-50 border-t border-gray-200"
+      className="fixed bottom-0 left-0 right-0 h-16 md:hidden z-40 border-t border-gray-200"
       style={{ backgroundColor: 'white' }}
     >
       <div className="h-full grid grid-cols-4">
