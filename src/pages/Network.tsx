@@ -8,6 +8,38 @@ type NetworkTab = 'connect' | 'mentors' | 'myNetwork';
 export default function Network() {
   const [activeTab, setActiveTab] = useState<NetworkTab>('connect');
   const [declinedUsers, setDeclinedUsers] = useState<Set<number>>(new Set());
+  const [pendingRequests, setPendingRequests] = useState<NetworkUser[]>([
+    {
+      user_id: 201,
+      email: 'marcus.lee@example.com',
+      name: 'Marcus Lee',
+      businessStage: 'Growth',
+      businessIndustry: 'Technology',
+      tags: ['AI', 'SaaS'],
+      bio: 'Building the future of enterprise software',
+      profileImageURL: 'https://i.pravatar.cc/150?img=20'
+    },
+    {
+      user_id: 202,
+      email: 'sophia.martinez@example.com',
+      name: 'Sophia Martinez',
+      businessStage: 'Startup',
+      businessIndustry: 'Healthcare',
+      tags: ['Telemedicine', 'Innovation'],
+      bio: 'Transforming healthcare with technology',
+      profileImageURL: 'https://i.pravatar.cc/150?img=21'
+    },
+    {
+      user_id: 203,
+      email: 'david.kumar@example.com',
+      name: 'David Kumar',
+      businessStage: 'Established',
+      businessIndustry: 'E-commerce',
+      tags: ['Retail', 'Marketing'],
+      bio: 'Experienced e-commerce entrepreneur',
+      profileImageURL: 'https://i.pravatar.cc/150?img=22'
+    }
+  ]);
 
   // Mock data - replace with actual API calls
   const mockEntrepreneurs: NetworkUser[] = [
@@ -118,6 +150,22 @@ export default function Network() {
   const handlePass = (userId: number) => {
     console.log('Pass on user:', userId);
     setDeclinedUsers(prev => new Set(prev).add(userId));
+  };
+
+  const handleAcceptRequest = (userId: number) => {
+    // Find the request
+    const request = pendingRequests.find(r => r.user_id === userId);
+    if (request) {
+      // Add to connections
+      mockConnections.push(request);
+      // Remove from pending
+      setPendingRequests(prev => prev.filter(r => r.user_id !== userId));
+    }
+  };
+
+  const handleDeclineRequest = (userId: number) => {
+    // Remove from pending requests
+    setPendingRequests(prev => prev.filter(r => r.user_id !== userId));
   };
 
   const filteredEntrepreneurs = mockEntrepreneurs.filter(
@@ -254,6 +302,60 @@ export default function Network() {
                 </div>
               </div>
             </div>
+
+            {/* Pending Requests Section */}
+            {pendingRequests.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">Pending Requests</h2>
+                <div className="space-y-3">
+                  {pendingRequests.map(request => (
+                    <div
+                      key={request.user_id}
+                      className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center space-x-4">
+                        {request.profileImageURL ? (
+                          <img
+                            src={request.profileImageURL}
+                            alt={request.name}
+                            className="w-14 h-14 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div 
+                            className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                            style={{ backgroundColor: COLORS.yellow }}
+                          >
+                            {request.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-bold text-gray-900 mb-0.5">{request.name}</h3>
+                          <p className="text-sm text-gray-600 mb-1">{request.businessIndustry}</p>
+                          {request.bio && (
+                            <p className="text-xs text-gray-500 truncate">{request.bio}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => handleAcceptRequest(request.user_id)}
+                            className="px-4 py-2 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
+                            style={{ backgroundColor: COLORS.primary }}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleDeclineRequest(request.user_id)}
+                            className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-300 transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Connections List */}
             {mockConnections.length > 0 ? (
