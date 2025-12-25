@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../context/NotificationContext';
 import ForumPost from '../components/forum/ForumPost';
+import CommentsModal from '../components/forum/CommentsModal';
 import { ForumPost as ForumPostType } from '../types/forum';
 import { COLORS } from '../utils/colors';
 
@@ -91,28 +92,38 @@ const DUMMY_POSTS: ForumPostType[] = [
 export default function Forum() {
   const [posts, setPosts] = useState<ForumPostType[]>(DUMMY_POSTS);
   const [selectedTab, setSelectedTab] = useState<'for_you' | 'following'>('for_you');
+  const [commentsModalOpen, setCommentsModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<ForumPostType | null>(null);
   const { user } = useAuth();
   const { addNotification } = useNotification();
 
-  const handleLike = (postId: number) => {
+  const handleLike = (post: ForumPostType) => {
+    // Optimistic local update only - no API calls
     setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
+      prevPosts.map((p) =>
+        p.id === post.id
           ? {
-              ...post,
-              liked_by_user: !post.liked_by_user,
-              like_count: post.liked_by_user ? post.like_count - 1 : post.like_count + 1,
+              ...p,
+              liked_by_user: !p.liked_by_user,
+              like_count: p.liked_by_user ? p.like_count - 1 : p.like_count + 1,
             }
-          : post
+          : p
       )
     );
   };
 
-  const handleComment = (_postId: number) => {
-    addNotification('Comments coming soon!', 'info');
+  const handleComment = (post: ForumPostType) => {
+    setSelectedPost(post);
+    setCommentsModalOpen(true);
+  };
+
+  const handleCloseComments = () => {
+    setCommentsModalOpen(false);
+    setSelectedPost(null);
   };
 
   const handleDelete = (postId: number) => {
+    // Local delete only - no API calls
     setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
     addNotification('Post deleted', 'success');
   };
@@ -240,14 +251,26 @@ export default function Forum() {
               key={post.id}
               post={post}
               isCurrentUser={post.user_id === user?.user_id}
-              onComment={() => handleComment(post.id)}
-              onLike={() => handleLike(post.id)}
+              onComment={() => handleComment(post)}
+              onLike={() => handleLike(post)}
               onDelete={() => handleDelete(post.id)}
               onProfileClick={() => handleProfileClick(post.user_id)}
             />
           ))
         )}
       </div>
+
+      {/* Comments Modal */}
+      {selectedPost && (
+        <CommentsModal
+          postId={selectedPost.id}
+          isOpen={commentsModalOpen}
+          onClose={handleCloseComments}
+          postAuthor={selectedPost.user}
+          postContent={selectedPost.content}
+          postTimestamp={selectedPost.created_at}
+        />
+      )}
     </div>
   );
 }
