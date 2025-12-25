@@ -143,7 +143,7 @@ export default function Profile() {
                 )}
                 
                 {/* Camera icon overlay */}
-                <button className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform" style={{ backgroundColor: COLORS.primary }}>
+                <button className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-10" style={{ backgroundColor: COLORS.primary }}>
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                   </svg>
