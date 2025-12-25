@@ -122,12 +122,12 @@ export default function Profile() {
         >
           {/* Profile Picture */}
           <div className="flex flex-col items-center">
-            <div className="relative mb-5">
+            <div className="relative mb-5 w-32 h-32 mx-auto">
               {/* Enhanced outer glow - smaller */}
-              <div className="absolute inset-0 w-36 h-36 mx-auto rounded-full bg-white/30 blur-xl" />
+              <div className="absolute inset-0 w-36 h-36 -left-2 -top-2 rounded-full bg-white/30 blur-xl" />
               
               {/* White border ring - medium size */}
-              <div className="relative w-32 h-32 mx-auto rounded-full border-4 border-white overflow-hidden bg-white shadow-2xl">
+              <div className="relative w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white shadow-2xl">
                 {profileData?.profile_image ? (
                   <img 
                     src={profileData.profile_image} 
@@ -141,14 +141,14 @@ export default function Profile() {
                     </span>
                   </div>
                 )}
-                
-                {/* Camera icon overlay */}
-                <button className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-10" style={{ backgroundColor: COLORS.primary }}>
-                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                  </svg>
-                </button>
               </div>
+              
+              {/* Camera icon overlay */}
+              <button className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-20" style={{ backgroundColor: COLORS.primary }}>
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+              </button>
             </div>
 
             {/* Name and Username */}
