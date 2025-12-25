@@ -9,7 +9,7 @@ interface CircleSettingsMenuProps {
 }
 
 export default function CircleSettingsMenu({
-  circleId,
+  circleId: _circleId,
   circleName,
   isModerator,
   onClose
