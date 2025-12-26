@@ -4,6 +4,7 @@ import AboutCircleModal from './AboutCircleModal';
 import MemberListModal from './MemberListModal';
 import DashboardMemberListModal from './DashboardMemberListModal';
 import DuesModal from './DuesModal';
+import ManageChannelsModal from '../../../components/circles/ManageChannelsModal';
 import { Circle } from '../../../types/circle';
 
 interface CircleSettingsMenuProps {
@@ -31,6 +32,7 @@ export default function CircleSettingsMenu({
   const [showMemberListModal, setShowMemberListModal] = useState(false);
   const [showDashboardMemberListModal, setShowDashboardMemberListModal] = useState(false);
   const [showDuesModal, setShowDuesModal] = useState(false);
+  const [showManageChannels, setShowManageChannels] = useState(false);
 
   const handleLeaveCircle = () => {
     console.log('Leave circle:', circleName);
@@ -195,10 +197,7 @@ export default function CircleSettingsMenu({
 
               {/* Manage Channels */}
               <button
-                onClick={() => {
-                  console.log('Manage Channels');
-                  onClose();
-                }}
+                onClick={() => setShowManageChannels(true)}
                 className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-t border-gray-100"
               >
                 <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
@@ -305,6 +304,16 @@ export default function CircleSettingsMenu({
         circleName={circleName}
         userId={currentUserId}
         isModerator={isModerator}
+      />
+
+      <ManageChannelsModal
+        isOpen={showManageChannels}
+        onClose={() => setShowManageChannels(false)}
+        circleId={circleId}
+        userId={currentUserId}
+        onChannelsUpdated={() => {
+          console.log('Channels updated');
+        }}
       />
     </>
   );

@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 import { COLORS } from '../../../utils/colors';
 import { Circle } from '../../../types/circle';
 
@@ -8,7 +9,50 @@ interface AboutCircleModalProps {
 }
 
 export default function AboutCircleModal({ isOpen, onClose, circle }: AboutCircleModalProps) {
+  const [previewImage, setPreviewImage] = useState<string | null>(circle.profile_image_url || null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   if (!isOpen) return null;
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPreviewImage(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to API
+    setIsUploading(true);
+    await uploadCircleImage(file);
+    setIsUploading(false);
+  };
+
+  const uploadCircleImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append('circle_id', circle.id.toString());
+    formData.append('user_id', '1'); // TODO: Get from auth context
+    formData.append('profile_image', file);
+
+    try {
+      // TODO: Replace with actual API endpoint
+      // const response = await fetch('https://circlapp.online/api/circles/upload_circle_image/', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Token ${token}`
+      //   },
+      //   body: formData
+      // });
+
+      console.log('Circle image uploaded:', file.name);
+    } catch (error) {
+      console.error('Failed to upload circle image:', error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
@@ -29,6 +73,49 @@ export default function AboutCircleModal({ isOpen, onClose, circle }: AboutCircl
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Circle Image Upload Section - Moderator Only */}
+          {circle.is_moderator && (
+            <div className="flex flex-col items-center space-y-3">
+              <div 
+                className="relative w-32 h-32 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {previewImage ? (
+                  <img 
+                    src={previewImage} 
+                    alt={circle.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+                {isUploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+                disabled={isUploading}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="text-sm font-semibold underline disabled:opacity-50"
+                style={{ color: COLORS.primary }}
+              >
+                {isUploading ? 'Uploading...' : 'Upload Circle Photo'}
+              </button>
+            </div>
+          )}
+
           <div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">About This Circle</h3>
             <p className="text-gray-700 leading-relaxed">{circle.description}</p>
