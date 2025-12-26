@@ -23,6 +23,8 @@ export default function CreateCircleModal({ isOpen, onClose, onCreateCircle, use
   const [accessCode, setAccessCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log('CreateCircleModal isOpen:', isOpen);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -229,34 +231,30 @@ export default function CreateCircleModal({ isOpen, onClose, onCreateCircle, use
 
             {/* Private Circle Toggle */}
             <div className="bg-gray-50 rounded-xl p-4">
-              <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm font-semibold text-gray-700">Make Circle Private</span>
                   <p className="text-xs text-gray-500 mt-1">
                     Members will need an access code to join
                   </p>
                 </div>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={isPrivate}
-                    onChange={(e) => setIsPrivate(e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div 
-                    className={`w-14 h-8 rounded-full transition-colors ${
-                      isPrivate ? 'bg-green-500' : 'bg-gray-300'
+                <button
+                  type="button"
+                  onClick={() => setIsPrivate(!isPrivate)}
+                  className="relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2"
+                  style={{ 
+                    backgroundColor: isPrivate ? '#22c55e' : '#d1d5db',
+                    '--tw-ring-color': '#3b82f6'
+                  } as any}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                      isPrivate ? 'translate-x-7' : 'translate-x-1'
                     }`}
-                    onClick={() => setIsPrivate(!isPrivate)}
-                  >
-                    <div 
-                      className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform mt-1 ${
-                        isPrivate ? 'translate-x-7' : 'translate-x-1'
-                      }`}
-                    />
-                  </div>
-                </div>
-              </label>
+                    style={{ marginTop: '4px' }}
+                  />
+                </button>
+              </div>
 
               {/* Access Code Field */}
               {isPrivate && (

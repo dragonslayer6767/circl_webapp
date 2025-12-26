@@ -22,7 +22,7 @@ export default function ChannelChatView() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [channelName, setChannelName] = useState('');
   const [circleName, setCircleName] = useState('');
-  const [memberCount, setMemberCount] = useState(7);
+  const [memberCount] = useState(7);
   const [onlineCount, setOnlineCount] = useState(0);
   const [showChannelDropdown, setShowChannelDropdown] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -31,9 +31,6 @@ export default function ChannelChatView() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
   const [appLinkCopied, setAppLinkCopied] = useState(false);
-  const [showPinnedMessages, setShowPinnedMessages] = useState(false);
-  const [showGroupFiles, setShowGroupFiles] = useState(false);
-  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showDashboardMemberListModal, setShowDashboardMemberListModal] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
