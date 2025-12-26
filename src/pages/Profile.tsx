@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../utils/colors';
 import { useAuth } from '../hooks/useAuth';
+import ProfileCompletionBanner from '../components/common/ProfileCompletionBanner';
 
 interface ProfileData {
   id: number;
@@ -42,6 +43,36 @@ export default function Profile() {
   const [clubs, setClubs] = useState('');
   const [hobbies, setHobbies] = useState('');
   const [entrepreneurialHistory, setEntrepreneurialHistory] = useState('');
+
+  // Calculate profile completion percentage
+  const calculateCompletionPercentage = (): number => {
+    if (!profileData) return 0;
+    
+    const fields = [
+      profileData.profile_image,
+      profileData.bio,
+      profileData.birthday,
+      profileData.personality_type,
+      profileData.institution_attended,
+      profileData.years_of_experience,
+      profileData.locations && profileData.locations.length > 0,
+      profileData.skillsets && profileData.skillsets.length > 0,
+      profileData.clubs && profileData.clubs.length > 0,
+      profileData.hobbies && profileData.hobbies.length > 0,
+      profileData.entrepreneurial_history
+    ];
+    
+    const completedFields = fields.filter(field => field).length;
+    const totalFields = fields.length;
+    
+    return Math.round((completedFields / totalFields) * 100);
+  };
+
+  const handleCompleteProfile = () => {
+    // Scroll to the editable fields or enable editing mode
+    setIsEditing(true);
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     // TODO: Fetch profile data from API
@@ -115,6 +146,12 @@ export default function Profile() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto p-6 pb-24">
+        {/* Profile Completion Banner */}
+        <ProfileCompletionBanner 
+          completionPercentage={calculateCompletionPercentage()}
+          onCompleteClick={handleCompleteProfile}
+        />
+
         {/* Profile Header Card */}
         <div 
           className="rounded-3xl p-8 mb-6 shadow-xl relative overflow-hidden"

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { COLORS } from '../utils/colors';
+import { useAuth } from '../hooks/useAuth';
 import { NetworkUser } from '../types/network';
 import ProfileModal from '../components/networking/ProfileModal';
 import ChatView from './ChatView';
@@ -9,6 +10,7 @@ import EnhancedMentorCard from '../components/networking/EnhancedMentorCard';
 type NetworkTab = 'connect' | 'mentors' | 'myNetwork';
 
 export default function Network() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<NetworkTab>('connect');
   const [declinedUsers, setDeclinedUsers] = useState<Set<number>>(new Set());
   const [showProfileModal, setShowProfileModal] = useState(false);
