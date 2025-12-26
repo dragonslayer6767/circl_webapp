@@ -6,6 +6,7 @@ export interface ForumPost {
   content: string;
   category: string;
   privacy: string;
+  tags?: string[];
   image?: string;
   created_at: string;
   comment_count?: number;

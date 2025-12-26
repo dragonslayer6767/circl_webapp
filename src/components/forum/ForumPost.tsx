@@ -152,6 +152,25 @@ export default function ForumPost({
               </div>
             )}
 
+            {/* Tags */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-block px-2.5 py-1 text-xs font-medium rounded-full border"
+                    style={{
+                      borderColor: COLORS.primary + '40',
+                      backgroundColor: COLORS.primary + '10',
+                      color: COLORS.primary,
+                    }}
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex items-center gap-8 mt-2">
               {/* Comment Button */}
