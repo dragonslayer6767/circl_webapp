@@ -5,6 +5,7 @@ import { Circle } from '../../types/circle';
 import CalendarView from './components/CalendarView';
 import DashboardView from './components/DashboardView';
 import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
+import CreateThreadModal from './components/CreateThreadModal';
 
 interface Announcement {
   id: number;
@@ -44,6 +45,7 @@ export default function CircleView() {
   console.log(myCircles); // Suppress unused variable warning
   const [showSettings, setShowSettings] = useState(false);
   const [showCircleSwitcher, setShowCircleSwitcher] = useState(false);
+  const [showCreateThread, setShowCreateThread] = useState(false);
 
   useEffect(() => {
     if (circleId) {
@@ -285,7 +287,7 @@ export default function CircleView() {
                 <p className="text-xs text-gray-500 mt-0.5">Share ideas and discussions</p>
               </div>
               <button
-                onClick={() => console.log('Create thread - TODO')}
+                onClick={() => setShowCreateThread(true)}
                 className="flex items-center space-x-1.5 text-white font-semibold px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all"
                 style={{ backgroundColor: COLORS.primary }}
               >
@@ -425,6 +427,22 @@ export default function CircleView() {
           circleId={circle.id}
           circleName={circle.name}
           isModerator={circle.is_moderator}
+        />
+      )}
+
+      {/* Create Thread Modal */}
+      {showCreateThread && channels.length > 0 && (
+        <CreateThreadModal
+          isOpen={showCreateThread}
+          onClose={() => setShowCreateThread(false)}
+          circleId={circle?.id || 0}
+          circleName={circle?.name || ''}
+          channelId={channels[0].id}
+          channelName={channels[0].name}
+          onThreadCreated={() => {
+            // TODO: Refresh threads
+            console.log('Thread created');
+          }}
         />
       )}
     </div>

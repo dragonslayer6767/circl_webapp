@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { COLORS } from '../../../utils/colors';
+import CreateEventModal from './CreateEventModal';
 
 interface CalendarEvent {
   id: number;
@@ -24,6 +25,7 @@ export default function CalendarView({ circleId, circleName, isModerator }: Cale
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showAllEvents, setShowAllEvents] = useState(false);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
 
   // Mock event data
   const mockEvents: CalendarEvent[] = [
@@ -210,7 +212,7 @@ export default function CalendarView({ circleId, circleName, isModerator }: Cale
         </div>
         {isModerator && (
           <button
-            onClick={() => console.log('Create event - TODO')}
+            onClick={() => setShowCreateEvent(true)}
             className="flex items-center space-x-2 px-3 py-2 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             style={{ backgroundColor: COLORS.primary }}
           >
@@ -392,6 +394,18 @@ export default function CalendarView({ circleId, circleName, isModerator }: Cale
           </div>
         )}
       </div>
+
+      {/* Create Event Modal */}
+      <CreateEventModal
+        isOpen={showCreateEvent}
+        onClose={() => setShowCreateEvent(false)}
+        circleId={circleId}
+        circleName={circleName}
+        onEventCreated={() => {
+          // TODO: Refresh events
+          console.log('Event created');
+        }}
+      />
     </div>
   );
 }

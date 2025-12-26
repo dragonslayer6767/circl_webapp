@@ -65,10 +65,7 @@ export default function CircleSettingsMenu({
           {/* General Options */}
           <div className="py-2">
             <button
-              onClick={() => {
-                setShowAboutModal(true);
-                onClose();
-              }}
+              onClick={() => setShowAboutModal(true)}
               className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
             >
               <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
@@ -78,10 +75,7 @@ export default function CircleSettingsMenu({
             </button>
 
             <button
-              onClick={() => {
-                setShowMemberListModal(true);
-                onClose();
-              }}
+              onClick={() => setShowMemberListModal(true)}
               className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
             >
               <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
@@ -91,10 +85,7 @@ export default function CircleSettingsMenu({
             </button>
 
             <button
-              onClick={() => {
-                setShowDuesModal(true);
-                onClose();
-              }}
+              onClick={() => setShowDuesModal(true)}
               className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
             >
               <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
@@ -193,10 +184,7 @@ export default function CircleSettingsMenu({
 
               {/* Dashboard Members */}
               <button
-                onClick={() => {
-                  setShowDashboardMemberListModal(true);
-                  onClose();
-                }}
+                onClick={() => setShowDashboardMemberListModal(true)}
                 className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">

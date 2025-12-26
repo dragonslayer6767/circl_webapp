@@ -139,7 +139,7 @@ export default function DuesModal({
                                 placeholder="75.00"
                                 step="0.01"
                                 className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2"
-                                style={{ focusRing: COLORS.primary }}
+                                style={{ ['--tw-ring-color' as any]: COLORS.primary }}
                               />
                             </div>
                             <button
