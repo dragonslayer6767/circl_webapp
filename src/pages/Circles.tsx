@@ -63,19 +63,6 @@ export default function Circles() {
           creator_id: 5,
           is_moderator: false,
           profile_image_url: undefined
-        },
-        {
-          id: 3,
-          name: 'Data Science Hub',
-          industry: 'Data Science',
-          pricing: 'Freemium',
-          description: 'A private circle for data scientists and ML engineers. Share research papers, discuss algorithms, and collaborate on projects.',
-          join_type: 'Join Now',
-          member_count: 87,
-          is_private: true,
-          creator_id: currentUserId,
-          is_moderator: true,
-          profile_image_url: undefined
         }
       ]);
 
