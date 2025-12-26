@@ -1,20 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
+import { Circle } from '../../types/circle';
 import CalendarView from './components/CalendarView';
 import DashboardView from './components/DashboardView';
 import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
-
-interface Circle {
-  id: number;
-  name: string;
-  industry: string;
-  description: string;
-  member_count: number;
-  is_moderator: boolean;
-  has_dashboard: boolean;
-  is_dashboard_public: boolean;
-}
 
 interface Announcement {
   id: number;
@@ -62,9 +52,13 @@ export default function CircleView() {
       const mockCircle: Circle = {
         id: parseInt(circleId),
         name: 'Test',
-        industry: '',
+        industry: 'Technology',
+        pricing: 'Free',
         description: 'Test circle',
+        join_type: 'Join Now',
         member_count: 7,
+        is_private: false,
+        creator_id: 1,
         is_moderator: false,
         has_dashboard: true,
         is_dashboard_public: false
@@ -248,7 +242,9 @@ export default function CircleView() {
             <CircleSettingsMenu
               circleId={circle.id}
               circleName={circle.name}
+              circle={circle}
               isModerator={circle.is_moderator}
+              currentUserId={1} // TODO: Get from auth context
               onClose={() => setShowSettings(false)}
             />
           )}

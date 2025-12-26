@@ -1,23 +1,36 @@
 import { useState } from 'react';
 import { COLORS } from '../../../utils/colors';
+import AboutCircleModal from './AboutCircleModal';
+import MemberListModal from './MemberListModal';
+import DashboardMemberListModal from './DashboardMemberListModal';
+import DuesModal from './DuesModal';
+import { Circle } from '../../../types/circle';
 
 interface CircleSettingsMenuProps {
   circleId: number;
   circleName: string;
+  circle: Circle;
   isModerator: boolean;
+  currentUserId: number;
   onClose: () => void;
 }
 
 export default function CircleSettingsMenu({
-  circleId: _circleId,
+  circleId,
   circleName,
+  circle,
   isModerator,
+  currentUserId,
   onClose
 }: CircleSettingsMenuProps) {
   const [isDashboardEnabled, setIsDashboardEnabled] = useState(false);
   const [isDashboardPrivate, setIsDashboardPrivate] = useState(true);
   const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showMemberListModal, setShowMemberListModal] = useState(false);
+  const [showDashboardMemberListModal, setShowDashboardMemberListModal] = useState(false);
+  const [showDuesModal, setShowDuesModal] = useState(false);
 
   const handleLeaveCircle = () => {
     console.log('Leave circle:', circleName);
@@ -53,7 +66,7 @@ export default function CircleSettingsMenu({
           <div className="py-2">
             <button
               onClick={() => {
-                console.log('About This Circle');
+                setShowAboutModal(true);
                 onClose();
               }}
               className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
@@ -66,7 +79,7 @@ export default function CircleSettingsMenu({
 
             <button
               onClick={() => {
-                console.log('Members List');
+                setShowMemberListModal(true);
                 onClose();
               }}
               className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
@@ -79,7 +92,7 @@ export default function CircleSettingsMenu({
 
             <button
               onClick={() => {
-                console.log('Dues');
+                setShowDuesModal(true);
                 onClose();
               }}
               className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
@@ -178,6 +191,20 @@ export default function CircleSettingsMenu({
                 )}
               </div>
 
+              {/* Dashboard Members */}
+              <button
+                onClick={() => {
+                  setShowDashboardMemberListModal(true);
+                  onClose();
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+              >
+                <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                </svg>
+                <span className="text-sm font-medium text-gray-900">Dashboard Members</span>
+              </button>
+
               {/* Manage Channels */}
               <button
                 onClick={() => {
@@ -258,6 +285,39 @@ export default function CircleSettingsMenu({
           </div>
         </div>
       )}
+
+      {/* Modal Components */}
+      <AboutCircleModal
+        isOpen={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
+        circle={circle}
+      />
+
+      <MemberListModal
+        isOpen={showMemberListModal}
+        onClose={() => setShowMemberListModal(false)}
+        circleId={circleId}
+        circleName={circleName}
+        currentUserId={currentUserId}
+        isModerator={isModerator}
+      />
+
+      <DashboardMemberListModal
+        isOpen={showDashboardMemberListModal}
+        onClose={() => setShowDashboardMemberListModal(false)}
+        circleId={circleId}
+        circleName={circleName}
+        currentUserId={currentUserId}
+      />
+
+      <DuesModal
+        isOpen={showDuesModal}
+        onClose={() => setShowDuesModal(false)}
+        circleId={circleId}
+        circleName={circleName}
+        userId={currentUserId}
+        isModerator={isModerator}
+      />
     </>
   );
 }
