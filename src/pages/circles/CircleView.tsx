@@ -50,71 +50,137 @@ export default function CircleView() {
   useEffect(() => {
     if (circleId) {
       // TODO: Fetch circle data from API
-      // Mock data for now
-      const mockCircle: Circle = {
-        id: parseInt(circleId),
-        name: 'Test',
+      // Mock data for now - different data based on circleId
+      const currentUserId = 1; // TODO: Get from auth context
+      const id = parseInt(circleId);
+
+      // Circle 1: Tech Leaders Council (User is moderator)
+      // Circle 2: Growth Hackers (User is not moderator)
+      const mockCircles: { [key: number]: Circle } = {
+        1: {
+          id: 1,
+          name: 'Tech Leaders Council',
+          industry: 'Technology',
+          pricing: 'Premium',
+          description: 'An exclusive circle for technology leaders to discuss innovation, strategy, and industry trends.',
+          join_type: 'Join Now',
+          member_count: 42,
+          is_private: false,
+          creator_id: currentUserId,
+          is_moderator: true,
+          has_dashboard: true,
+          is_dashboard_public: false
+        },
+        2: {
+          id: 2,
+          name: 'Growth Hackers',
+          industry: 'Marketing',
+          pricing: '',
+          description: 'Connect with growth-focused professionals. Discuss strategies, tactics, and tools for scaling businesses rapidly.',
+          join_type: 'Join Now',
+          member_count: 156,
+          is_private: false,
+          creator_id: 5,
+          is_moderator: false,
+          has_dashboard: true,
+          is_dashboard_public: true
+        }
+      };
+
+      const mockCircle = mockCircles[id] || {
+        id: id,
+        name: 'Test Circle',
         industry: 'Technology',
         pricing: 'Free',
         description: 'Test circle',
         join_type: 'Join Now',
         member_count: 7,
         is_private: false,
-        creator_id: 1,
+        creator_id: currentUserId,
         is_moderator: false,
         has_dashboard: true,
         is_dashboard_public: false
       };
 
-      const mockAnnouncements: Announcement[] = [
+      const mockAnnouncements: Announcement[] = id === 1 ? [
         {
           id: 1,
-          title: 'Test announcement',
-          content: 'Test announcement content',
-          created_by: 'Harris',
-          created_at: 'Recently'
+          title: 'Welcome to Tech Leaders Council!',
+          content: 'We\'re excited to have you here. Share your insights and connect with fellow tech leaders.',
+          created_by: 'Admin',
+          created_at: '2 days ago'
+        }
+      ] : [
+        {
+          id: 1,
+          title: 'Monthly Growth Challenge',
+          content: 'Join our monthly challenge to grow your user base by 20%!',
+          created_by: 'Community Manager',
+          created_at: '1 day ago'
         }
       ];
 
-      const mockThreads: Thread[] = [
+      const mockThreads: Thread[] = id === 1 ? [
         {
           id: 1,
-          author: 'Bha',
-          content: 'raj is here',
-          created_at: '2 hours ago',
-          likes: 0,
-          comments: 0
+          author: 'Sarah Johnson',
+          content: 'What are your thoughts on the latest AI developments? How is everyone integrating AI into their tech stack?',
+          created_at: '3 hours ago',
+          likes: 12,
+          comments: 5
         },
         {
           id: 2,
-          author: 'Bha',
-          content: 'nice',
+          author: 'Michael Chen',
+          content: 'Looking for recommendations on cloud infrastructure providers. What has been your experience?',
+          created_at: '5 hours ago',
+          likes: 8,
+          comments: 3
+        }
+      ] : [
+        {
+          id: 1,
+          author: 'Alex Martinez',
+          content: 'Just hit 10k users with our product launch! Here are the growth tactics that worked...',
           created_at: '2 hours ago',
-          likes: 0,
-          comments: 0
+          likes: 24,
+          comments: 8
         },
         {
-          id: 3,
-          author: 'Bha',
-          content: 'ok',
-          created_at: '2 hours ago',
-          likes: 0,
-          comments: 0
-        },
-        {
-          id: 4,
-          author: 'Bha',
-          content: 'test thread',
-          created_at: '2 hours ago',
-          likes: 0,
-          comments: 0
+          id: 2,
+          author: 'Emily Davis',
+          content: 'Anyone experimenting with viral loops? Would love to share notes.',
+          created_at: '4 hours ago',
+          likes: 15,
+          comments: 6
         }
       ];
 
-      const mockChannels: Channel[] = [
+      const mockChannels: Channel[] = id === 1 ? [
         {
           id: 1,
-          name: 'Welcome',
+          name: 'General',
+          category: 'General'
+        },
+        {
+          id: 2,
+          name: 'Innovation',
+          category: 'General'
+        },
+        {
+          id: 3,
+          name: 'Strategy',
+          category: 'General'
+        }
+      ] : [
+        {
+          id: 1,
+          name: 'General',
+          category: 'General'
+        },
+        {
+          id: 2,
+          name: 'Growth Tactics',
           category: 'General'
         }
       ];
