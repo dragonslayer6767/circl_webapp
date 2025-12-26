@@ -25,7 +25,7 @@ export default function Messages() {
       userName: 'Ken B',
       lastMessage: 'I have games in my pants',
       timestamp: 'Oct 27',
-      unreadCount: 0
+      unreadCount: 2
     },
     {
       userId: '101',
@@ -33,6 +33,13 @@ export default function Messages() {
       lastMessage: 'Yooo',
       timestamp: 'Sep 6',
       unreadCount: 0
+    },
+    {
+      userId: '102',
+      userName: 'Sarah Chen',
+      lastMessage: 'Thanks for connecting! Would love to discuss that startup idea.',
+      timestamp: '2h ago',
+      unreadCount: 5
     }
   ];
 
@@ -195,7 +202,11 @@ export default function Messages() {
               <button
                 key={conversation.userId}
                 onClick={() => navigate(`/chat/${conversation.userId}`)}
-                className="w-full bg-white rounded-2xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02] border border-gray-100 p-5 flex items-start space-x-4 group"
+                className={`w-full rounded-2xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02] p-5 flex items-start space-x-4 group ${
+                  conversation.unreadCount > 0 
+                    ? 'bg-blue-50/60 border-2 border-blue-200' 
+                    : 'bg-white border border-gray-100'
+                }`}
               >
                 {/* Profile Image */}
                 <div className="relative flex-shrink-0">
@@ -215,18 +226,34 @@ export default function Messages() {
                 {/* Message Info */}
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold text-gray-900 text-lg">
+                    <h3 className={`text-lg ${conversation.unreadCount > 0 ? 'font-extrabold text-gray-900' : 'font-bold text-gray-900'}`}>
                       {conversation.userName}
                     </h3>
-                    <span className="text-sm text-gray-500 font-medium flex-shrink-0 ml-2">
+                    <span className={`text-sm flex-shrink-0 ml-2 font-medium ${
+                      conversation.unreadCount > 0 ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
                       {conversation.timestamp}
                     </span>
                   </div>
-                  <div className="bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-100">
-                    <p className="text-sm text-gray-700 line-clamp-2">
+                  <div className={`rounded-xl px-4 py-2.5 ${
+                    conversation.unreadCount > 0 
+                      ? 'bg-white border-2 border-blue-100' 
+                      : 'bg-gray-50 border border-gray-100'
+                  }`}>
+                    <p className={`text-sm line-clamp-2 ${
+                      conversation.unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-700'
+                    }`}>
                       {conversation.lastMessage}
                     </p>
                   </div>
+                  {conversation.unreadCount > 0 && (
+                    <div className="flex items-center gap-1 mt-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                      <span className="text-xs font-semibold text-blue-600">
+                        {conversation.unreadCount} new message{conversation.unreadCount !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </button>
             ))}

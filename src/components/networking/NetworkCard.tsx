@@ -5,11 +5,15 @@ interface NetworkCardProps {
   user: NetworkUser;
   onConnect: (userId: number) => void;
   onPass: (userId: number) => void;
+  onProfileClick?: (user: NetworkUser) => void;
 }
 
-export default function NetworkCard({ user, onConnect, onPass }: NetworkCardProps) {
+export default function NetworkCard({ user, onConnect, onPass, onProfileClick }: NetworkCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div 
+      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-shadow"
+      onClick={() => onProfileClick?.(user)}
+    >
       <div className="flex items-start space-x-4 mb-4">
         {/* Profile Image */}
         <div className="flex-shrink-0">
@@ -98,7 +102,10 @@ export default function NetworkCard({ user, onConnect, onPass }: NetworkCardProp
       {/* Action Buttons */}
       <div className="flex space-x-3 mt-4">
         <button
-          onClick={() => onPass(user.user_id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPass(user.user_id);
+          }}
           className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +114,10 @@ export default function NetworkCard({ user, onConnect, onPass }: NetworkCardProp
           <span>Pass</span>
         </button>
         <button
-          onClick={() => onConnect(user.user_id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onConnect(user.user_id);
+          }}
           className="flex-1 px-4 py-2.5 rounded-lg text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center space-x-2"
           style={{ backgroundColor: COLORS.primary }}
         >
