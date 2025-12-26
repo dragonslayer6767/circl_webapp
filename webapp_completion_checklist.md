@@ -1,7 +1,7 @@
 # Circl Web App - Feature Completion Checklist
 
-**Last Updated:** December 25, 2025  
-**Status:** 40% Complete (Core Features Done, Growth Features Pending)  
+**Last Updated:** December 26, 2025  
+**Status:** 42% Complete (Core Features & Chat Fixed, Growth Features Pending)  
 **Target:** 100% Feature Parity with iOS App
 
 ---
@@ -9,11 +9,11 @@
 ## 📊 Overall Progress
 
 ```
-████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 40%
+███████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 42%
 
-Core Features:        ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 60%
+Core Features:        ████████████████████░░░░░░░░░░░░░░░░░░░░░░░░ 65%
 Authentication:       ████████████████████████████░░░░░░░░░░░░░░░░░░ 80%
-Social Features:      ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 40%
+Social Features:      ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 45%
 Growth Features:      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%
 Monetization:         ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%
 ```
@@ -77,12 +77,16 @@ Monetization:         ░░░░░░░░░░░░░░░░░░░�
 - [x] Message list
 - [x] Message input
 - [x] Mock conversations
+- [x] Read receipts (UI working)
+- [x] Typing indicators (UI working)
+- [x] Message search (filter by text)
+- [x] Date-based message grouping (TODAY/YESTERDAY format)
+- [x] Profile modal integration
+- [x] Report user functionality
+- [x] Block user functionality
 - [ ] Real-time messaging via WebSocket
 - [ ] File sharing in chat
 - [ ] Message reactions
-- [ ] Read receipts
-- [ ] Typing indicators
-- [ ] Message search
 
 ### Circles/Groups
 - [x] Circles page (Explore & My Circles)
@@ -501,7 +505,7 @@ Before each release:
 | Profile Management | ✅ Complete | 95% | 16 | 🔴 |
 | Forum/Feed | ✅ Partial | 60% | 8 | 🔴 |
 | Networking | ✅ Partial | 70% | 6 | 🔴 |
-| Messages | ✅ Partial | 60% | 8 | 🔴 |
+| Messages | ✅ Partial | 75% | 8 | 🔴 |
 | Circles | ✅ Partial | 75% | 12 | 🔴 |
 | Settings | ✅ Complete | 100% | 8 | 🔴 |
 | **GROWTH FEATURES** |
@@ -575,5 +579,18 @@ npm run build -- --analyze
 
 ---
 
-**Last Updated:** December 25, 2025  
+**Last Updated:** December 26, 2025  
 **Next Review:** January 8, 2026
+
+---
+
+## 🔧 Recent Fixes (December 26)
+
+### ChatView Component Reconstruction
+- ✅ Recreated ChatView.tsx from backup
+- ✅ Fixed NetworkUser type mismatch (id → user_id)
+- ✅ Removed invalid properties from NetworkUser object
+- ✅ Fixed Network.tsx import path (../components/chat/ChatView → ./ChatView)
+- ✅ Cleaned up corrupted and backup files
+- ✅ All errors resolved, dev server running
+- ✅ Changes committed and pushed to GitHub

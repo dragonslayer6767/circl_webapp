@@ -10,6 +10,9 @@ interface ChatMessage {
   timestamp: Date;
   isFromCurrentUser: boolean;
   imageUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
   isRead?: boolean;
 }
 
@@ -35,6 +38,9 @@ export default function ChatView() {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mock user data - in real app, fetch based on userId
   const chatUser: ChatUser = {
@@ -81,6 +87,74 @@ export default function ChatView() {
     navigate('/messages');
   };
 
+  // File upload handlers
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      setSelectedFiles(Array.from(files));
+    }
+  };
+
+  const handleAddMediaClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      setSelectedFiles(prev => [...prev, ...Array.from(files)]);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
+      return '🖼️';
+    } else if (['pdf'].includes(ext || '')) {
+      return '📄';
+    } else if (['doc', 'docx'].includes(ext || '')) {
+      return '📝';
+    } else if (['xls', 'xlsx'].includes(ext || '')) {
+      return '📊';
+    } else if (['zip', 'rar'].includes(ext || '')) {
+      return '🗜️';
+    }
+    return '📎';
+  };
+
   // Mock messages
   useEffect(() => {
     const mockMessages: ChatMessage[] = [
@@ -118,7 +192,7 @@ export default function ChatView() {
   }, [messages]);
 
   const handleSendMessage = () => {
-    if (!messageText.trim()) return;
+    if (!messageText.trim() && selectedFiles.length === 0) return;
 
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -128,8 +202,25 @@ export default function ChatView() {
       isRead: false
     };
 
+    // Handle file attachments
+    if (selectedFiles.length > 0) {
+      const file = selectedFiles[0]; // For now, send one file at a time
+      const isImage = file.type.startsWith('image/');
+      
+      if (isImage) {
+        // Create preview URL for images
+        newMessage.imageUrl = URL.createObjectURL(file);
+      } else {
+        // For other files, store metadata
+        newMessage.fileUrl = URL.createObjectURL(file);
+        newMessage.fileName = file.name;
+        newMessage.fileSize = file.size;
+      }
+    }
+
     setMessages([...messages, newMessage]);
     setMessageText('');
+    setSelectedFiles([]);
 
     // Simulate read receipt after 2 seconds
     setTimeout(() => {
@@ -337,7 +428,26 @@ export default function ChatView() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div 
+        className="flex-1 overflow-y-auto px-4 py-4 relative"
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Drag and Drop Overlay */}
+        {isDragging && (
+          <div className="absolute inset-0 bg-blue-500/10 backdrop-blur-sm z-50 flex items-center justify-center border-4 border-dashed border-blue-500 rounded-lg">
+            <div className="text-center">
+              <svg className="w-16 h-16 mx-auto mb-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p className="text-lg font-semibold text-blue-600">Drop files here to send</p>
+              <p className="text-sm text-gray-500">Images and documents supported</p>
+            </div>
+          </div>
+        )}
+
         {searchText && filteredMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
             <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -380,19 +490,55 @@ export default function ChatView() {
                       {/* Message Bubble */}
                       <div>
                         <div
-                          className={`px-4 py-2.5 rounded-2xl ${
+                          className={`rounded-2xl ${
                             message.isFromCurrentUser
                               ? 'rounded-br-sm'
                               : 'rounded-bl-sm'
-                          }`}
+                          } overflow-hidden`}
                           style={{
                             backgroundColor: message.isFromCurrentUser ? COLORS.primary : '#f3f4f6',
                             color: message.isFromCurrentUser ? 'white' : '#1f2937'
                           }}
                         >
-                          <p className="text-sm leading-relaxed break-words">
-                            {message.text}
-                          </p>
+                          {/* Image attachment */}
+                          {message.imageUrl && (
+                            <div className="max-w-sm">
+                              <img 
+                                src={message.imageUrl} 
+                                alt="Shared image" 
+                                className="w-full h-auto rounded-t-2xl cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => window.open(message.imageUrl, '_blank')}
+                              />
+                            </div>
+                          )}
+                          
+                          {/* File attachment */}
+                          {message.fileUrl && message.fileName && (
+                            <div className="px-4 py-3 flex items-center gap-3 min-w-[200px]">
+                              <div className="text-3xl">{getFileIcon(message.fileName)}</div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{message.fileName}</p>
+                                {message.fileSize && (
+                                  <p className="text-xs opacity-70">{formatFileSize(message.fileSize)}</p>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => window.open(message.fileUrl, '_blank')}
+                                className="flex-shrink-0 p-1 hover:bg-black/10 rounded"
+                              >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                          
+                          {/* Text message */}
+                          {message.text && (
+                            <p className={`text-sm leading-relaxed break-words ${message.imageUrl || message.fileUrl ? 'px-4 py-2.5' : 'px-4 py-2.5'}`}>
+                              {message.text}
+                            </p>
+                          )}
                         </div>
                         
                         {/* Timestamp and Read Receipts */}
@@ -454,11 +600,58 @@ export default function ChatView() {
 
       {/* Input Bar */}
       <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+        {/* File Preview Area */}
+        {selectedFiles.length > 0 && (
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex flex-wrap gap-2">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="relative bg-white border border-gray-300 rounded-lg p-2 flex items-center gap-2 max-w-xs">
+                  {file.type.startsWith('image/') ? (
+                    <img 
+                      src={URL.createObjectURL(file)} 
+                      alt={file.name} 
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded text-2xl">
+                      {getFileIcon(file.name)}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{file.name}</p>
+                    <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveFile(index)}
+                    className="flex-shrink-0 p-1 hover:bg-red-100 rounded text-red-600"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="p-4 flex items-end space-x-3">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+
           {/* Add Media Button */}
           <button
+            onClick={handleAddMediaClick}
             className="w-9 h-9 rounded-full flex items-center justify-center text-white flex-shrink-0"
             style={{ backgroundColor: COLORS.primary }}
+            title="Add files or images"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -486,9 +679,9 @@ export default function ChatView() {
           {/* Send Button */}
           <button
             onClick={handleSendMessage}
-            disabled={!messageText.trim()}
+            disabled={!messageText.trim() && selectedFiles.length === 0}
             className={`w-9 h-9 rounded-full flex items-center justify-center text-white flex-shrink-0 transition-opacity ${
-              messageText.trim() ? 'opacity-100' : 'opacity-50'
+              messageText.trim() || selectedFiles.length > 0 ? 'opacity-100' : 'opacity-50'
             }`}
             style={{ backgroundColor: COLORS.primary }}
           >
