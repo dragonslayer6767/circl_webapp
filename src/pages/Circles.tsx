@@ -24,20 +24,19 @@ export default function Circles() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (user?.user_id) {
-      loadCircles();
-    }
-  }, [user]);
+    // Load circles on mount (using mock data for now)
+    loadCircles();
+  }, []);
 
   const loadCircles = async () => {
-    if (!user?.user_id) return;
+    const currentUserId = user?.user_id || 1;
 
     setIsLoading(true);
-    const currentUserId = user?.user_id || 1;
 
     try {
       // For development: Use mock data by default
       // TODO: Replace with actual API calls when backend is ready
+      console.log('About to set myCircles and exploreCircles');
       setMyCircles([
         {
           id: 1,
@@ -631,18 +630,10 @@ function CircleCard({ circle, isMember, onJoin, onOpen, onAbout }: CircleCardPro
                   style={{ backgroundColor: '#fbbf24', color: '#78350f' }}
                   title={isCreator ? 'Creator' : 'Moderator'}
                 >
-                  {isCreator ? '👑 Creator' : '⭐ Mod'}
+                  {isCreator ? '👑' : ''}
                 </span>
               )}
             </div>
-            {circle.pricing && (
-              <span 
-                className="ml-2 px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap flex-shrink-0"
-                style={{ backgroundColor: `${COLORS.primary}15`, color: COLORS.primary }}
-              >
-                {circle.pricing}
-              </span>
-            )}
           </div>
 
           <div className="space-y-1 mb-3">
