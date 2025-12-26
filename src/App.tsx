@@ -27,6 +27,7 @@ import Profile from './pages/Profile';
 import BusinessProfile from './pages/BusinessProfile';
 import Circles from './pages/Circles';
 import CircleView from './pages/circles/CircleView';
+import ChannelChatView from './pages/circles/ChannelChatView';
 import './App.css';
 
 // Create a client for React Query
@@ -130,6 +131,11 @@ function App() {
                       <CircleView />
                     </MainLayout>
                   }
+                />
+
+                <Route
+                  path="/circles/:circleId/channel/:channelId"
+                  element={<ChannelChatView />}
                 />
 
                 {/* TEMPORARY: Settings and sub-routes are public for development */}
