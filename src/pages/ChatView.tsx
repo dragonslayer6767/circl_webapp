@@ -24,7 +24,13 @@ interface ChatUser {
   position?: string;
 }
 
-export default function ChatView() {
+interface ChatViewProps {
+  user?: NetworkUser;
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function ChatView({ user: propUser, isOpen = true, onClose }: ChatViewProps = {}) {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -40,10 +46,19 @@ export default function ChatView() {
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [showMediaMenu, setShowMediaMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock user data - in real app, fetch based on userId
-  const chatUser: ChatUser = {
+  // Use prop user if provided, otherwise use mock data from URL
+  const chatUser: ChatUser = propUser ? {
+    id: propUser.user_id.toString(),
+    name: propUser.name,
+    company: propUser.businessIndustry || 'Tech Company',
+    position: 'Entrepreneur',
+    profileImage: propUser.profileImageURL || propUser.image
+  } : {
     id: userId || '100',
     name: userId === '100' ? 'Ken B' : 'Sai Darsh Kandukuri',
     company: 'Tech Innovations',
@@ -51,7 +66,7 @@ export default function ChatView() {
   };
 
   // Convert ChatUser to NetworkUser for ProfileModal
-  const networkUser: NetworkUser = {
+  const networkUser: NetworkUser = propUser || {
     user_id: parseInt(chatUser.id),
     email: '',
     name: chatUser.name,
@@ -93,10 +108,23 @@ export default function ChatView() {
     if (files) {
       setSelectedFiles(Array.from(files));
     }
+    setShowMediaMenu(false);
   };
 
   const handleAddMediaClick = () => {
+    setShowMediaMenu(!showMediaMenu);
+  };
+
+  const handleChooseImage = () => {
+    imageInputRef.current?.click();
+  };
+
+  const handleChooseFile = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleTakePhoto = () => {
+    cameraInputRef.current?.click();
   };
 
   const handleRemoveFile = (index: number) => {
@@ -293,7 +321,12 @@ export default function ChatView() {
     return grouped;
   };
 
-  return (
+  // If not open (used as modal) and isOpen is false, don't render
+  if (onClose && !isOpen) {
+    return null;
+  }
+
+  const chatContent = (
     <div className="flex flex-col h-screen bg-white">
       {/* Header */}
       <div className="flex-shrink-0" style={{ backgroundColor: COLORS.primary }}>
@@ -301,7 +334,7 @@ export default function ChatView() {
         <div className="px-4 py-3 flex items-center space-x-3">
           {/* Back Button */}
           <button
-            onClick={() => navigate('/messages')}
+            onClick={() => onClose ? onClose() : navigate('/messages')}
             className="text-white hover:opacity-80 transition-opacity"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -635,16 +668,100 @@ export default function ChatView() {
           </div>
         )}
 
-        <div className="p-4 flex items-end space-x-3">
-          {/* Hidden file input */}
+        <div className="p-4 flex items-end space-x-3 relative">
+          {/* Hidden file inputs */}
           <input
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar"
             onChange={handleFileSelect}
             className="hidden"
           />
+          <input
+            ref={imageInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+
+          {/* Media Menu */}
+          {showMediaMenu && (
+            <>
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setShowMediaMenu(false)}
+              />
+              <div className="absolute bottom-16 left-4 w-64 bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-gray-200">
+                <button
+                  onClick={handleChooseImage}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.primary + '20' }}>
+                    <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Photo Library</p>
+                    <p className="text-xs text-gray-500">Choose from your photos</p>
+                  </div>
+                </button>
+                <div className="border-t border-gray-200" />
+                <button
+                  onClick={handleChooseFile}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.primary + '20' }}>
+                    <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Attach Document</p>
+                    <p className="text-xs text-gray-500">PDF, Word, Excel, ZIP files</p>
+                  </div>
+                </button>
+                <div className="border-t border-gray-200" />
+                <button
+                  onClick={handleTakePhoto}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.primary + '20' }}>
+                    <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Take Photo</p>
+                    <p className="text-xs text-gray-500">Capture with camera</p>
+                  </div>
+                </button>
+                <div className="border-t border-gray-200" />
+                <div className="px-4 py-3 bg-blue-50">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-xs text-blue-800 leading-relaxed">
+                      <span className="font-semibold">Pro tip:</span> You can also drag & drop files directly into the chat!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Add Media Button */}
           <button
@@ -815,4 +932,17 @@ export default function ChatView() {
       )}
     </div>
   );
+
+  // If used as a modal, wrap with modal overlay
+  if (onClose) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="w-full h-full max-w-4xl">
+          {chatContent}
+        </div>
+      </div>
+    );
+  }
+
+  return chatContent;
 }
