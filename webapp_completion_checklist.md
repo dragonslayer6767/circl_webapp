@@ -1,7 +1,7 @@
 # Circl Web App - Feature Completion Checklist
 
 **Last Updated:** December 26, 2025  
-**Status:** 42% Complete (Core Features & Chat Fixed, Growth Features Pending)  
+**Status:** 45% Complete (Core Features with File Sharing, Growth Features Pending)  
 **Target:** 100% Feature Parity with iOS App
 
 ---
@@ -9,11 +9,11 @@
 ## 📊 Overall Progress
 
 ```
-███████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 42%
+████████████████████░░░░░░░░░░░░░░░░░░░░░░ 45%
 
-Core Features:        ████████████████████░░░░░░░░░░░░░░░░░░░░░░░░ 65%
+Core Features:        ███████████████████████░░░░░░░░░░░░░░░░░░░░ 70%
 Authentication:       ████████████████████████████░░░░░░░░░░░░░░░░░░ 80%
-Social Features:      ████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 45%
+Social Features:      ████████████████████░░░░░░░░░░░░░░░░░░░░░░░ 50%
 Growth Features:      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%
 Monetization:         ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%
 ```
@@ -84,8 +84,13 @@ Monetization:         ░░░░░░░░░░░░░░░░░░░�
 - [x] Profile modal integration
 - [x] Report user functionality
 - [x] Block user functionality
+- [x] Image sharing (upload & preview)
+- [x] File sharing (documents, PDFs, etc.)
+- [x] Drag and drop file upload
+- [x] File preview with size display
+- [x] Image preview in messages
+- [x] File download in messages
 - [ ] Real-time messaging via WebSocket
-- [ ] File sharing in chat
 - [ ] Message reactions
 
 ### Circles/Groups
@@ -505,7 +510,7 @@ Before each release:
 | Profile Management | ✅ Complete | 95% | 16 | 🔴 |
 | Forum/Feed | ✅ Partial | 60% | 8 | 🔴 |
 | Networking | ✅ Partial | 70% | 6 | 🔴 |
-| Messages | ✅ Partial | 75% | 8 | 🔴 |
+| Messages | ✅ Partial | 85% | 8 | 🔴 |
 | Circles | ✅ Partial | 75% | 12 | 🔴 |
 | Settings | ✅ Complete | 100% | 8 | 🔴 |
 | **GROWTH FEATURES** |
@@ -594,3 +599,15 @@ npm run build -- --analyze
 - ✅ Cleaned up corrupted and backup files
 - ✅ All errors resolved, dev server running
 - ✅ Changes committed and pushed to GitHub
+
+### Image & File Sharing Implementation
+- ✅ Added image upload and preview functionality
+- ✅ Added file upload support (PDF, DOC, XLS, ZIP, etc.)
+- ✅ Implemented drag-and-drop file upload with visual overlay
+- ✅ File preview area showing thumbnails and metadata
+- ✅ Image display in message bubbles with click to open
+- ✅ File attachments with download button
+- ✅ File size formatter and type-based icons
+- ✅ Support for multiple file selection
+- ✅ Remove individual files before sending
+- ✅ Updated send button to work with files only (no text required)
