@@ -225,7 +225,7 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-5">
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-5" style={{ minWidth: isPanel ? '350px' : undefined }}>
         {/* Month Navigation */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-gray-900">

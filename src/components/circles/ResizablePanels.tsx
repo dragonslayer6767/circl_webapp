@@ -26,7 +26,11 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
       if (panels.length > 0 && containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth;
         if (containerWidth > 0) {
-          const equalWidth = containerWidth / panels.length;
+          // Account for resize handles (1px each, panels.length - 1 handles)
+          const resizeHandleWidth = 1;
+          const totalResizeHandleWidth = (panels.length - 1) * resizeHandleWidth;
+          const availableWidth = containerWidth - totalResizeHandleWidth;
+          const equalWidth = availableWidth / panels.length;
           setWidths(new Array(panels.length).fill(equalWidth));
         }
       }
@@ -42,14 +46,17 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
     const handleResize = () => {
       if (containerRef.current && widths.length === panels.length) {
         const containerWidth = containerRef.current.offsetWidth;
+        const resizeHandleWidth = 1;
+        const totalResizeHandleWidth = (panels.length - 1) * resizeHandleWidth;
+        const availableWidth = containerWidth - totalResizeHandleWidth;
         const totalCurrentWidth = widths.reduce((a, b) => a + b, 0);
         if (totalCurrentWidth > 0) {
           // Scale proportionally
-          const scale = containerWidth / totalCurrentWidth;
+          const scale = availableWidth / totalCurrentWidth;
           setWidths(widths.map(w => w * scale));
         } else {
           // Reinitialize
-          const equalWidth = containerWidth / panels.length;
+          const equalWidth = availableWidth / panels.length;
           setWidths(new Array(panels.length).fill(equalWidth));
         }
       }
@@ -77,7 +84,7 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
       if (!containerRef.current || isDragging === null) return;
 
       const deltaX = e.clientX - startX;
-      const minWidth = 250;
+      const minWidth = 200; // Minimum panel width when resizing
 
       setWidths(() => {
         const newWidths = [...startWidths];
@@ -120,21 +127,22 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
   return (
     <div 
       ref={containerRef}
-      className="flex h-full w-full overflow-hidden bg-gray-50"
+      className="flex h-full w-full bg-gray-50"
       style={{ 
         cursor: isDragging !== null ? 'col-resize' : 'default',
-        userSelect: isDragging !== null ? 'none' : 'auto'
+        userSelect: isDragging !== null ? 'none' : 'auto',
+        overflow: 'hidden'
       }}
     >
       {panels.map((panel, index) => (
         <React.Fragment key={panel.id}>
           {/* Panel Content */}
           <div
-            className="h-full overflow-y-auto overflow-x-hidden bg-white"
+            className="h-full overflow-y-auto overflow-x-auto bg-white border-r border-gray-200"
             style={{
               width: widths[index] ? `${widths[index]}px` : `${100 / panels.length}%`,
-              minWidth: '250px',
               flexShrink: 0,
+              flexGrow: 0,
             }}
           >
             {/* Panel Header */}
@@ -154,7 +162,7 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
             </div>
 
             {/* Panel Body */}
-            <div className="p-4 overflow-x-hidden" style={{ backgroundColor: '#f5f5f5' }}>
+            <div className="p-4 overflow-x-auto" style={{ backgroundColor: '#f5f5f5' }}>
               {panel.content}
             </div>
           </div>
