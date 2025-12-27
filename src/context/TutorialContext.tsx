@@ -8,6 +8,7 @@ interface TutorialContextType {
   isShowingTutorial: boolean;
   tutorialState: TutorialState;
   userType: UserType;
+  showPostTutorialOverlay: boolean;
   
   startTutorial: (userType?: UserType) => void;
   nextStep: () => void;
@@ -18,6 +19,7 @@ interface TutorialContextType {
   setUserType: (type: UserType) => void;
   checkAndTriggerTutorial: () => void;
   clearAllTutorialData: () => void;
+  dismissPostTutorialOverlay: () => void;
 }
 
 const TutorialContext = createContext<TutorialContextType | undefined>(undefined);
@@ -29,6 +31,7 @@ export const TutorialProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [tutorialState, setTutorialState] = useState<TutorialState>({ type: 'notStarted' });
   const [userType, setUserTypeState] = useState<UserType>('community-builder');
   const [isTutorialStarting, setIsTutorialStarting] = useState(false);
+  const [showPostTutorialOverlay, setShowPostTutorialOverlay] = useState(false);
 
   // Load user type and tutorial progress from localStorage
   useEffect(() => {
@@ -150,16 +153,21 @@ export const TutorialProvider: React.FC<{ children: ReactNode }> = ({ children }
         localStorage.setItem('completed_tutorial_flows', JSON.stringify(completedFlows));
       }
       
-      // Set flag to show post-tutorial overlay
+      // Trigger post-tutorial overlay if this was from onboarding
       const justCompletedOnboarding = localStorage.getItem('just_completed_onboarding');
       if (justCompletedOnboarding === 'true') {
-        localStorage.setItem('show_post_tutorial_overlay', 'true');
+        setShowPostTutorialOverlay(true);
       }
     }
     
     setCurrentFlow(null);
     setCurrentStepIndex(0);
   }, [currentFlow]);
+
+  const dismissPostTutorialOverlay = useCallback(() => {
+    setShowPostTutorialOverlay(false);
+    localStorage.removeItem('just_completed_onboarding');
+  }, []);
 
   const restartTutorial = useCallback(() => {
     console.log('🔄 Restarting tutorial for:', userType);
@@ -208,6 +216,7 @@ export const TutorialProvider: React.FC<{ children: ReactNode }> = ({ children }
         isShowingTutorial,
         tutorialState,
         userType,
+        showPostTutorialOverlay,
         startTutorial,
         nextStep,
         previousStep,
@@ -216,7 +225,8 @@ export const TutorialProvider: React.FC<{ children: ReactNode }> = ({ children }
         restartTutorial,
         setUserType,
         checkAndTriggerTutorial,
-        clearAllTutorialData
+        clearAllTutorialData,
+        dismissPostTutorialOverlay
       }}
     >
       {children}

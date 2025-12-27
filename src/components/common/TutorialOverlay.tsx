@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTutorial } from '../../context/TutorialContext';
 import { COLORS } from '../../utils/colors';
+import PostOnboardingOverlay from './PostOnboardingOverlay';
 
 export default function TutorialOverlay() {
   const {
@@ -10,6 +11,8 @@ export default function TutorialOverlay() {
     isShowingTutorial,
     nextStep,
     skipTutorial,
+    showPostTutorialOverlay,
+    dismissPostTutorialOverlay,
   } = useTutorial();
   
   const navigate = useNavigate();
@@ -22,6 +25,16 @@ export default function TutorialOverlay() {
       navigate(currentStep.navigationDestination);
     }
   }, [currentStep, navigate, isShowingTutorial]);
+
+  // Show post-tutorial overlay if flag is set
+  if (showPostTutorialOverlay) {
+    return (
+      <PostOnboardingOverlay 
+        isOpen={true}
+        onClose={dismissPostTutorialOverlay}
+      />
+    );
+  }
 
   if (!isShowingTutorial || !currentFlow || !currentStep) {
     return null;

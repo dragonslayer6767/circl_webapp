@@ -4,7 +4,6 @@ import { useTutorial } from '../context/TutorialContext';
 import ForumPost from '../components/forum/ForumPost';
 import CommentsModal from '../components/forum/CommentsModal';
 import NotificationTester from '../components/common/NotificationTester';
-import PostOnboardingOverlay from '../components/common/PostOnboardingOverlay';
 import { ForumPost as ForumPostType } from '../types/forum';
 import { COLORS } from '../utils/colors';
 
@@ -115,37 +114,21 @@ export default function Forum() {
   const [newPostContent, setNewPostContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPrivacy, setSelectedPrivacy] = useState<string>('public');
-  const [showPostOnboarding, setShowPostOnboarding] = useState(false);
   const { user } = useAuth();
   const { checkAndTriggerTutorial } = useTutorial();
 
-  // Check if should show post-tutorial overlay or trigger tutorial
+  // Check if should trigger tutorial after onboarding
   useEffect(() => {
     const justCompleted = localStorage.getItem('just_completed_onboarding');
-    const showPostTutorial = localStorage.getItem('show_post_tutorial_overlay');
-    const hasSeenOverlay = localStorage.getItem('seen_post_tutorial_overlay');
     
-    if (showPostTutorial === 'true' && hasSeenOverlay !== 'true') {
-      // Show post-tutorial overlay after tutorial completes
-      const timer = setTimeout(() => {
-        setShowPostOnboarding(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    } else if (justCompleted === 'true') {
-      // Trigger tutorial if just completed onboarding and haven't shown yet
+    if (justCompleted === 'true') {
+      // Trigger tutorial if just completed onboarding
       const timer = setTimeout(() => {
         checkAndTriggerTutorial();
       }, 1500);
       return () => clearTimeout(timer);
     }
   }, [checkAndTriggerTutorial]);
-
-  const handleClosePostOnboarding = () => {
-    setShowPostOnboarding(false);
-    localStorage.setItem('seen_post_tutorial_overlay', 'true');
-    localStorage.removeItem('show_post_tutorial_overlay');
-    localStorage.removeItem('just_completed_onboarding');
-  };
 
   const handleLike = (post: ForumPostType) => {
     // Optimistic local update only - no API calls
@@ -470,12 +453,6 @@ export default function Forum() {
           postTimestamp={selectedPost.created_at}
         />
       )}
-
-      {/* Post-Onboarding Overlay */}
-      <PostOnboardingOverlay 
-        isOpen={showPostOnboarding}
-        onClose={handleClosePostOnboarding}
-      />
 
       {/* Notification Tester */}
       <NotificationTester />
