@@ -19,6 +19,7 @@ interface DashboardViewProps {
   circlePricing: string;
   memberCount: number;
   isModerator: boolean;
+  isPanel?: boolean;
 }
 
 type ViewMode = 'kanban' | 'projects';
@@ -30,7 +31,8 @@ export default function DashboardView({
   circleIndustry,
   circlePricing,
   memberCount,
-  isModerator
+  isModerator,
+  isPanel = false
 }: DashboardViewProps) {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -186,7 +188,7 @@ export default function DashboardView({
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-5 pb-24 pt-4">
+    <div className={isPanel ? "w-full" : "max-w-6xl mx-auto px-5 pb-24 pt-4"}>
       {/* Header */}
       <div className="mb-5">
         <h1 className="text-2xl font-bold text-gray-900">{circleName} Dashboard</h1>

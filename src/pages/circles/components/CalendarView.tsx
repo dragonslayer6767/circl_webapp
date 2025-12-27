@@ -19,9 +19,10 @@ interface CalendarViewProps {
   circleId: number;
   circleName: string;
   isModerator: boolean;
+  isPanel?: boolean;
 }
 
-export default function CalendarView({ circleId, circleName, isModerator }: CalendarViewProps) {
+export default function CalendarView({ circleId, circleName, isModerator, isPanel = false }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showAllEvents, setShowAllEvents] = useState(false);
@@ -203,7 +204,7 @@ export default function CalendarView({ circleId, circleName, isModerator }: Cale
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-5 pb-24 pt-4">
+    <div className={isPanel ? "w-full" : "max-w-6xl mx-auto px-5 pb-24 pt-4"}>
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>

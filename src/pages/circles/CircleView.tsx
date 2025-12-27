@@ -242,6 +242,7 @@ export default function CircleView() {
             circlePricing="Free"
             memberCount={circle.member_count}
             isModerator={circle.is_moderator}
+            isPanel={true}
           />
         );
       case 'calendar':
@@ -250,6 +251,7 @@ export default function CircleView() {
             circleId={circle.id}
             circleName={circle.name}
             isModerator={circle.is_moderator}
+            isPanel={true}
           />
         );
       default:
