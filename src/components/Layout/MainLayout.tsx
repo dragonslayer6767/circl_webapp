@@ -25,9 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <main className={`flex-1 pt-16 pb-16 md:pb-0 transition-all duration-300 ${
           isCollapsed ? 'md:pl-20' : 'md:pl-64'
         }`}>
-          <div className="h-full w-full">
-            {children}
-          </div>
+          {children}
         </main>
       </div>
       

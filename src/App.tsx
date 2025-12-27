@@ -274,7 +274,7 @@ function App() {
                 
                 {/* 404 Route */}
                 <Route path="*" element={<Navigate to="/forum" replace />} />
-              </Routes>
+                </Routes>
               </SidebarProvider>
             </NotificationProvider>
           </AuthProvider>
