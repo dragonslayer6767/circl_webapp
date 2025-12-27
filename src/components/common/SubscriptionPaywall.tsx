@@ -77,8 +77,8 @@ export default function SubscriptionPaywall() {
             </div>
 
             {/* Subscription Plans - Centered */}
-            <div className="flex justify-center py-4">
-              <div className="flex gap-4 overflow-x-auto px-4 max-w-full">
+            <div className="flex justify-center py-6">
+              <div className="flex gap-4 overflow-x-auto px-4 py-2 max-w-full">
                 {currentContent.plans.map((plan) => (
                   <SubscriptionPlanCard key={plan.id} plan={plan} content={currentContent} />
                 ))}
@@ -117,7 +117,7 @@ function SubscriptionPlanCard({ plan, content: _content }: any) {
     <button
       onClick={() => selectPlan(plan.id)}
       className={`
-        w-72 h-[420px] p-5 rounded-2xl transition-all flex-shrink-0 flex flex-col
+        w-72 h-[420px] p-6 rounded-2xl transition-all flex-shrink-0 flex flex-col my-1
         ${
           isSelected
             ? 'ring-2 ring-offset-2'
@@ -131,7 +131,7 @@ function SubscriptionPlanCard({ plan, content: _content }: any) {
     >
       <div className="flex flex-col h-full">
         {/* Header - Fixed */}
-        <div className="flex items-start justify-between flex-shrink-0">
+        <div className="flex items-start justify-between flex-shrink-0 mb-4">
           <div className="text-left flex-1">
             {plan.isPopular && (
               <span className="inline-block text-xs font-bold text-white bg-orange-500 px-3 py-1 rounded-full mb-2">
@@ -161,7 +161,7 @@ function SubscriptionPlanCard({ plan, content: _content }: any) {
         </div>
 
         {/* Features - Scrollable */}
-        <div className="flex-1 overflow-y-auto mt-4 pt-4 border-t border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto pt-4 border-t border-gray-200 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           <div className="space-y-3 pr-2">
             {plan.features.map((feature: string, index: number) => (
               <div key={index} className="flex items-start gap-2">
