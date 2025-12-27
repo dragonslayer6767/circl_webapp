@@ -4,6 +4,7 @@ import { useTutorial } from '../context/TutorialContext';
 import ForumPost from '../components/forum/ForumPost';
 import CommentsModal from '../components/forum/CommentsModal';
 import NotificationTester from '../components/common/NotificationTester';
+import PostOnboardingOverlay from '../components/common/PostOnboardingOverlay';
 import { ForumPost as ForumPostType } from '../types/forum';
 import { COLORS } from '../utils/colors';
 
@@ -114,18 +115,38 @@ export default function Forum() {
   const [newPostContent, setNewPostContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPrivacy, setSelectedPrivacy] = useState<string>('public');
+  const [showPostOnboarding, setShowPostOnboarding] = useState(false);
   const { user } = useAuth();
   const { checkAndTriggerTutorial } = useTutorial();
 
-  // Check if tutorial should start after onboarding
+  // Check if should show post-onboarding overlay, then tutorial
   useEffect(() => {
-    // Small delay to ensure UI is ready
-    const timer = setTimeout(() => {
-      checkAndTriggerTutorial();
-    }, 1500);
-
-    return () => clearTimeout(timer);
+    const justCompleted = localStorage.getItem('just_completed_onboarding');
+    const hasSeenOverlay = localStorage.getItem('seen_post_onboarding_overlay');
+    
+    if (justCompleted === 'true' && hasSeenOverlay !== 'true') {
+      // Show post-onboarding overlay first
+      const timer = setTimeout(() => {
+        setShowPostOnboarding(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (justCompleted === 'true') {
+      // If already seen overlay, trigger tutorial
+      const timer = setTimeout(() => {
+        checkAndTriggerTutorial();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
   }, [checkAndTriggerTutorial]);
+
+  const handleClosePostOnboarding = () => {
+    setShowPostOnboarding(false);
+    localStorage.setItem('seen_post_onboarding_overlay', 'true');
+    // After closing overlay, trigger tutorial
+    setTimeout(() => {
+      checkAndTriggerTutorial();
+    }, 500);
+  };
 
   const handleLike = (post: ForumPostType) => {
     // Optimistic local update only - no API calls
@@ -450,6 +471,12 @@ export default function Forum() {
           postTimestamp={selectedPost.created_at}
         />
       )}
+
+      {/* Post-Onboarding Overlay */}
+      <PostOnboardingOverlay 
+        isOpen={showPostOnboarding}
+        onClose={handleClosePostOnboarding}
+      />
 
       {/* Notification Tester */}
       <NotificationTester />

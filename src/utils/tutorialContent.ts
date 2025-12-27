@@ -45,7 +45,6 @@ export function createEntrepreneurTutorial(): TutorialFlow {
       targetView: 'home_tab',
       message:
         'Think of this as your community bulletin board where entrepreneurs share wins, challenges, insights, and opportunities. Post your own updates, celebrate milestones, and engage with fellow founders content to build meaningful connections.',
-      navigationDestination: '/network',
       tooltipAlignment: 'bottom',
       isInteractive: false,
     },
@@ -56,7 +55,7 @@ export function createEntrepreneurTutorial(): TutorialFlow {
       targetView: 'network_tab',
       message:
         "This is your most powerful tool as an entrepreneur. Search for co-founders with complementary skills, experienced mentors who've been where you're going, and industry experts who can provide valuable guidance for your startup journey.",
-      navigationDestination: '/circles',
+      navigationDestination: '/network',
       tooltipAlignment: 'top',
       isInteractive: true,
     },
@@ -67,6 +66,7 @@ export function createEntrepreneurTutorial(): TutorialFlow {
       targetView: 'circles_tab',
       message:
         "Create a circle to run your business operations. Manage tasks, track KPIs, centralize team communication, and coordinate with co-founders. It's your startup's command center in one organized space.",
+      navigationDestination: '/circles',
       tooltipAlignment: 'bottom',
       isInteractive: false,
     },
@@ -87,7 +87,6 @@ export function createEntrepreneurTutorial(): TutorialFlow {
       targetView: 'circles_tab',
       message:
         'Create a circle for your startup team and advisors, or join exclusive investor networks and accelerator groups. Use circles strategically to build your startup ecosystem.',
-      navigationDestination: '/business-profile',
       tooltipAlignment: 'left',
       isInteractive: false,
     },
@@ -98,7 +97,7 @@ export function createEntrepreneurTutorial(): TutorialFlow {
       targetView: 'business_profile_tab',
       message:
         "Your business profile is crucial for attracting investors and co-founders. Share your startup's mission, traction, funding needs, and what roles you're looking to fill.",
-      navigationDestination: '/messages',
+      navigationDestination: '/profile/business',
       tooltipAlignment: 'top',
       isInteractive: false,
     },
@@ -109,7 +108,7 @@ export function createEntrepreneurTutorial(): TutorialFlow {
       targetView: 'messages_tab',
       message:
         'Use messages to have meaningful conversations with mentors, collaborate with co-founders and team members, pass valuable network connections to others, and engage with potential clients or customers. This is where relationships turn into business opportunities.',
-      navigationDestination: '/forum',
+      navigationDestination: '/messages',
       tooltipAlignment: 'right',
       isInteractive: false,
     },
@@ -157,7 +156,6 @@ export function createStudentTutorial(): TutorialFlow {
       targetView: 'home_tab',
       message:
         'The home feed is your research database. Read stories, learn failures and successes, and stay updated on market trends. This knowledge will be invaluable for your future ventures.',
-      navigationDestination: '/network',
       tooltipAlignment: 'bottom',
       isInteractive: false,
     },
@@ -168,7 +166,7 @@ export function createStudentTutorial(): TutorialFlow {
       targetView: 'network_tab',
       message:
         'Many successful employees and entrepreneurs love mentoring students. Use the network to find mentors in your field of interest, ask for advice, and learn from their experiences. This is pure gold for your development!',
-      navigationDestination: '/forum',
+      navigationDestination: '/network',
       tooltipAlignment: 'top',
       isInteractive: true,
     },
@@ -179,7 +177,6 @@ export function createStudentTutorial(): TutorialFlow {
       targetView: 'forum_tab',
       message:
         "Circl is the first networking app where you can actually collaborate with professionals. Find projects from our project/job listing board. If you think it's necessary, don't hesitate to charge a business for your service. Build a team with your friends. Your future is yours!",
-      navigationDestination: '/circles',
       tooltipAlignment: 'bottom',
       isInteractive: false,
     },
@@ -190,7 +187,7 @@ export function createStudentTutorial(): TutorialFlow {
       targetView: 'circles_tab',
       message:
         'Joining organizations gives you insider access to their partner companies, their alumni network, and their professional workshops giving you better development than most students who are not in one.',
-      navigationDestination: '/profile',
+      navigationDestination: '/circles',
       tooltipAlignment: 'top',
       isInteractive: false,
     },
@@ -201,7 +198,7 @@ export function createStudentTutorial(): TutorialFlow {
       targetView: 'profile_tab',
       message:
         "Circl is built on collaboration, having an incomplete profile may cause distrust between users, besides if the community understands you better, they'll know how to work with you best!",
-      navigationDestination: '/messages',
+      navigationDestination: '/profile',
       tooltipAlignment: 'bottom',
       isInteractive: false,
     },
@@ -212,7 +209,7 @@ export function createStudentTutorial(): TutorialFlow {
       targetView: 'messages_tab',
       message:
         'Use messages to have deeper conversations with mentors, collaborate on projects, and build lasting professional relationships. Remember to be respectful, genuine, and always follow up on commitments.',
-      navigationDestination: '/forum',
+      navigationDestination: '/messages',
       tooltipAlignment: 'right',
       isInteractive: false,
     },
@@ -260,7 +257,6 @@ export function createStudentEntrepreneurTutorial(): TutorialFlow {
       targetView: 'home_tab',
       message:
         'The home feed is your entrepreneurship classroom. Read founder stories, learn from failures and successes, and stay updated on startup trends. This knowledge will be invaluable for your future ventures.',
-      navigationDestination: '/network',
       tooltipAlignment: 'bottom',
       isInteractive: false,
     },
@@ -271,7 +267,7 @@ export function createStudentEntrepreneurTutorial(): TutorialFlow {
       targetView: 'network_tab',
       message:
         'Many successful entrepreneurs love mentoring students. Use the network to find mentors in your field of interest, ask for advice, and learn from their experiences. This is pure gold for your development!',
-      navigationDestination: '/circles',
+      navigationDestination: '/network',
       tooltipAlignment: 'top',
       isInteractive: true,
     },
@@ -282,6 +278,7 @@ export function createStudentEntrepreneurTutorial(): TutorialFlow {
       targetView: 'circles_tab',
       message:
         "Join circles like 'Student Entrepreneurs', 'College Startup Founders', or industry-specific groups. Share ideas, find potential co-founders, and learn from peers who are on similar journeys.",
+      navigationDestination: '/circles',
       tooltipAlignment: 'top',
       isInteractive: false,
     },
@@ -302,7 +299,6 @@ export function createStudentEntrepreneurTutorial(): TutorialFlow {
       targetView: 'circles_tab',
       message:
         'Recruit and build a team for your business with other college students on the platform. Find students with complementary skills, shared entrepreneurial drive, and the flexibility that comes with being in school. Your next co-founder or key team member might be just a few dorms away!',
-      navigationDestination: '/profile',
       tooltipAlignment: 'left',
       isInteractive: false,
     },
@@ -313,7 +309,7 @@ export function createStudentEntrepreneurTutorial(): TutorialFlow {
       targetView: 'profile_tab',
       message:
         'Even as a student, showcase your projects, internships, and entrepreneurial interests. This helps mentors understand your goals and attracts like-minded student entrepreneurs.',
-      navigationDestination: '/messages',
+      navigationDestination: '/profile',
       tooltipAlignment: 'top',
       isInteractive: false,
     },
@@ -324,7 +320,7 @@ export function createStudentEntrepreneurTutorial(): TutorialFlow {
       targetView: 'messages_tab',
       message:
         "When reaching out to entrepreneurs, be genuine about being a student. Ask thoughtful questions, show you've done your research, and offer to help with small tasks. Authenticity beats perfection!",
-      navigationDestination: '/forum',
+      navigationDestination: '/messages',
       tooltipAlignment: 'right',
       isInteractive: false,
     },
@@ -351,6 +347,234 @@ export function createStudentEntrepreneurTutorial(): TutorialFlow {
   };
 }
 
+// Community Builder Tutorial
+export function createCommunityBuilderTutorial(): TutorialFlow {
+  const steps: TutorialStep[] = [
+    {
+      id: 'community-builder-welcome',
+      title: 'Welcome Community Builder!',
+      description: 'Learn how to create and manage thriving professional communities',
+      targetView: 'main_navigation',
+      message:
+        "Not only will you have tools to manage your community, Circl actually provides the ecosystem for them to build on their goals. You're not just building a community, you're making that impact.",
+      navigationDestination: '/forum',
+      tooltipAlignment: 'center',
+      isInteractive: false,
+    },
+    {
+      id: 'community-builder-brand',
+      title: 'Your Brand Canvas',
+      description: 'Engage with the community with valuable content and updates',
+      targetView: 'home_tab',
+      message:
+        'Be seen by the users, doing so will improve your chances of them joining your community!',
+      tooltipAlignment: 'bottom',
+      isInteractive: false,
+    },
+    {
+      id: 'community-builder-network',
+      title: 'Build Your Professional Network',
+      description: 'Connect with other community builders and potential members',
+      targetView: 'network_tab',
+      message:
+        'Network with other successful community builders, find potential community members, and learn best practices for community management and growth.',
+      navigationDestination: '/network',
+      tooltipAlignment: 'top',
+      isInteractive: true,
+    },
+    {
+      id: 'community-builder-circles',
+      title: 'Create and Manage Circles',
+      description: 'Build multiple communities around different topics and interests',
+      targetView: 'circles_tab',
+      message:
+        'Create circles for different professional groups, industries, or interests. Use advanced moderation tools, analytics, and engagement features to build thriving communities. Consider creating subscription packages with different benefits for your community members if you want to monetize your community.',
+      navigationDestination: '/circles',
+      tooltipAlignment: 'top',
+      isInteractive: false,
+    },
+    {
+      id: 'community-builder-business',
+      title: "The Circle's Feature is Not Just a Community Feature",
+      description: 'You can create a private/public dashboard to run your business',
+      targetView: 'success_tips',
+      message:
+        "Track your KPIs, tasks, and more in the dashboard. Not only is the Circle's feature made to create communities, but you can also create one to run your company, invite your coworkers or employees and build together. The future is yours, build it!",
+      tooltipAlignment: 'center',
+      isInteractive: false,
+    },
+  ];
+
+  return {
+    id: 'community-builder-tutorial',
+    userType: 'community-builder',
+    title: "Community Builder's Guide to Circl",
+    description: 'Master the art of building and managing professional communities',
+    steps: [...steps, createTutorialAccessStep(), createFinalCommunityStep()],
+    estimatedDuration: 7 * 60,
+    isRequired: true,
+  };
+}
+
+// Investor Tutorial
+export function createInvestorTutorial(): TutorialFlow {
+  const steps: TutorialStep[] = [
+    {
+      id: 'investor-welcome',
+      title: 'Welcome to Circl, Investor!',
+      description: 'Discover quality startups and connect with promising founders',
+      targetView: 'main_navigation',
+      message:
+        'As an investor, you need deal flow, due diligence insights, and direct access to founders. Circl provides a curated community of serious entrepreneurs and investors.',
+      navigationDestination: '/forum',
+      tooltipAlignment: 'center',
+      isInteractive: false,
+    },
+    {
+      id: 'investor-scout',
+      title: 'Scout Investment Opportunities',
+      description: 'Browse startup updates and founder achievements',
+      targetView: 'home_tab',
+      message:
+        'The home feed shows startup milestones, funding announcements, and founder insights. Great for spotting trending companies and understanding market dynamics before making investment decisions.',
+      tooltipAlignment: 'bottom',
+      isInteractive: false,
+    },
+    {
+      id: 'investor-founders',
+      title: 'Direct Founder Access',
+      description: 'Connect directly with founders seeking investment',
+      targetView: 'network_tab',
+      message:
+        'Skip the pitch deck emails. Connect directly with founders, ask questions, and evaluate opportunities.',
+      navigationDestination: '/network',
+      tooltipAlignment: 'top',
+      isInteractive: true,
+    },
+    {
+      id: 'investor-circles-join',
+      title: 'Join Investor Circles',
+      description: 'Connect with other investors and share deal flow',
+      targetView: 'circles_tab',
+      message:
+        'Join investor-focused circles to share due diligence insights, co-invest in deals, and learn from experienced VCs and angels. Collaboration often leads to better investment outcomes.',
+      navigationDestination: '/circles',
+      tooltipAlignment: 'top',
+      isInteractive: false,
+    },
+    {
+      id: 'investor-circles-create',
+      title: 'Create Your Investment Circle',
+      description: 'Build a community with your founders and portfolio companies',
+      targetView: 'circles_tab',
+      message:
+        'Create a circle to build a community with your founders or even run your own personal investment company through Circl. This allows you to maintain ongoing relationships with your portfolio companies and create a supportive ecosystem.',
+      tooltipAlignment: 'bottom',
+      isInteractive: false,
+    },
+    {
+      id: 'investor-mentoring',
+      title: 'Generate Deal Flow Through Mentoring',
+      description: 'Become a mentor to discover early-stage opportunities',
+      targetView: 'circles_tab',
+      message:
+        'Get deal flow by creating a circle and becoming a mentor. Advise entrepreneurs on how to set up a business that an investor would back, and co-create this mentoring approach with other investors. This positions you to see promising deals early.',
+      tooltipAlignment: 'left',
+      isInteractive: false,
+    },
+  ];
+
+  return {
+    id: 'investor-tutorial',
+    userType: 'investor',
+    title: "Investor's Guide to Deal Flow",
+    description: 'Use Circl to find quality investment opportunities and connect with founders',
+    steps: [...steps, createTutorialAccessStep(), createFinalCommunityStep()],
+    estimatedDuration: 8 * 60,
+    isRequired: true,
+  };
+}
+
+// Mentor Tutorial
+export function createMentorTutorial(): TutorialFlow {
+  const steps: TutorialStep[] = [
+    {
+      id: 'mentor-welcome',
+      title: 'Welcome to Circl, Mentor!',
+      description: 'Share your expertise and guide the next generation of entrepreneurs',
+      targetView: 'main_navigation',
+      message:
+        'Your experience is invaluable to aspiring entrepreneurs. Circl makes it easy to connect with founders who need your specific expertise and guidance.',
+      navigationDestination: '/forum',
+      tooltipAlignment: 'center',
+      isInteractive: false,
+    },
+    {
+      id: 'mentor-share',
+      title: 'Share Knowledge & Insights',
+      description: 'Contribute to the entrepreneurial community through content',
+      targetView: 'home_tab',
+      message:
+        'Share your experiences, lessons learned, and industry insights. Your posts help founders avoid common mistakes and make better decisions. This also helps potential mentees find you.',
+      tooltipAlignment: 'bottom',
+      isInteractive: false,
+    },
+    {
+      id: 'mentor-find',
+      title: 'Find Mentees & Co-Create Groups',
+      description: 'Connect with mentees and collaborate with fellow mentors',
+      targetView: 'network_tab',
+      message:
+        'Find mentees or co-create mentorship groups with other mentors. Browse entrepreneurs looking for guidance in your expertise area, or team up with other mentors to create comprehensive mentorship programs.',
+      navigationDestination: '/network',
+      tooltipAlignment: 'top',
+      isInteractive: true,
+    },
+    {
+      id: 'mentor-circle-create',
+      title: 'Create Your Mentorship Circle',
+      description: 'Build and monetize your own mentorship community',
+      targetView: 'circles_tab',
+      message:
+        'Create your own mentorship circle that you can monetize if you choose. Make your circle as small or as large as you think you can handle as a mentor. This gives you control over your mentorship capacity and allows you to create specialized programs.',
+      navigationDestination: '/circles',
+      tooltipAlignment: 'bottom',
+      isInteractive: false,
+    },
+    {
+      id: 'mentor-discussions',
+      title: 'Lead Industry Discussions',
+      description: 'Guide conversations in relevant circles',
+      targetView: 'circles_tab',
+      message:
+        'Join circles in your area of expertise and contribute to discussions. Your insights help shape the next generation of entrepreneurs and establish you as a thought leader.',
+      tooltipAlignment: 'top',
+      isInteractive: false,
+    },
+    {
+      id: 'mentor-messages',
+      title: 'Mentor Through Direct Messages',
+      description: 'Provide personalized guidance through one-on-one conversations',
+      targetView: 'messages_tab',
+      message:
+        "Use messages to have deeper mentoring conversations, provide specific feedback, and build lasting mentor-mentee relationships. This personal touch makes all the difference in a founder's journey.",
+      navigationDestination: '/messages',
+      tooltipAlignment: 'right',
+      isInteractive: false,
+    },
+  ];
+
+  return {
+    id: 'mentor-tutorial',
+    userType: 'mentor',
+    title: "Mentor's Guide to Impact",
+    description: 'Learn how to effectively mentor and guide entrepreneurs on Circl',
+    steps: [...steps, createTutorialAccessStep(), createFinalCommunityStep()],
+    estimatedDuration: 8 * 60,
+    isRequired: true,
+  };
+}
+
 // Get tutorial flow based on user type
 export function getTutorialFlow(userType: UserType): TutorialFlow | null {
   switch (userType) {
@@ -360,13 +584,12 @@ export function getTutorialFlow(userType: UserType): TutorialFlow | null {
       return createStudentTutorial();
     case 'student-entrepreneur':
       return createStudentEntrepreneurTutorial();
-    case 'mentor':
     case 'community-builder':
+      return createCommunityBuilderTutorial();
     case 'investor':
-    case 'other':
-      // For now, default to entrepreneur tutorial
-      // TODO: Create specific tutorials for these user types
-      return createEntrepreneurTutorial();
+      return createInvestorTutorial();
+    case 'mentor':
+      return createMentorTutorial();
     default:
       return null;
   }

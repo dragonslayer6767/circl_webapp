@@ -98,8 +98,8 @@ export default function TutorialOverlay() {
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-2">
-              <div className="text-sm text-gray-500">
-                {Math.ceil((currentFlow.estimatedDuration * (1 - progress / 100)) / 60)} min remaining
+              <div className="text-sm font-semibold text-gray-700">
+                {Math.round(progress)}% Complete
               </div>
 
               <div className="flex gap-3">

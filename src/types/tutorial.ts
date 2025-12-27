@@ -5,8 +5,7 @@ export type UserType =
   | 'student-entrepreneur'
   | 'mentor'
   | 'community-builder'
-  | 'investor'
-  | 'other';
+  | 'investor';
 
 export const USER_TYPE_LABELS: Record<UserType, string> = {
   entrepreneur: 'Entrepreneur',
@@ -15,7 +14,6 @@ export const USER_TYPE_LABELS: Record<UserType, string> = {
   mentor: 'Mentor',
   'community-builder': 'Community Builder',
   investor: 'Investor',
-  other: 'Other',
 };
 
 // Tutorial Step Model

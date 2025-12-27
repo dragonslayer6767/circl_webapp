@@ -3,11 +3,10 @@
 export enum UserType {
   ENTREPRENEUR = 'entrepreneur',
   STUDENT = 'student',
-  STUDENT_ENTREPRENEUR = 'studentEntrepreneur',
+  STUDENT_ENTREPRENEUR = 'student-entrepreneur',
   MENTOR = 'mentor',
-  COMMUNITY_BUILDER = 'communityBuilder',
-  INVESTOR = 'investor',
-  OTHER = 'other'
+  COMMUNITY_BUILDER = 'community-builder',
+  INVESTOR = 'investor'
 }
 
 export interface OnboardingData {
@@ -23,8 +22,7 @@ export const UserTypeDisplayNames: Record<UserType, string> = {
   [UserType.STUDENT_ENTREPRENEUR]: 'Student Entrepreneur',
   [UserType.MENTOR]: 'Mentor',
   [UserType.COMMUNITY_BUILDER]: 'Community Builder',
-  [UserType.INVESTOR]: 'Investor',
-  [UserType.OTHER]: 'Other'
+  [UserType.INVESTOR]: 'Investor'
 };
 
 /**
