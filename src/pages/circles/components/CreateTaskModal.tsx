@@ -19,6 +19,7 @@ export interface TaskFormData {
   assignees: string[];
   startDate: Date;
   endDate: Date;
+  team?: string;
 }
 
 export default function CreateTaskModal({
@@ -36,6 +37,7 @@ export default function CreateTaskModal({
   const [assignees, setAssignees] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [team, setTeam] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +50,7 @@ export default function CreateTaskModal({
     const taskData: TaskFormData = {
       title: title.trim(),
       description: description.trim(),
+      team: team || undefined,
       priority,
       status,
       projectId: projectId || undefined,
@@ -187,6 +190,26 @@ export default function CreateTaskModal({
                   {project.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Team Assignment */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Team (Optional)
+            </label>
+            <select
+              value={team}
+              onChange={(e) => setTeam(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">No Team</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Sales">Sales</option>
+              <option value="Product">Product</option>
+              <option value="Operations">Operations</option>
+              <option value="Design">Design</option>
             </select>
           </div>
 

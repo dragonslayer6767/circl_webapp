@@ -48,6 +48,7 @@ export interface TaskItem {
   startDate: Date;
   endDate: Date;
   priority: TaskPriority;
+  team?: string;
   createdAt: Date;
   completedAt?: Date;
 }

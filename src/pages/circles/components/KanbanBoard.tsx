@@ -104,31 +104,44 @@ export default function KanbanBoard({ tasks, projects, onTaskClick }: KanbanBoar
                         </p>
                       )}
 
-                      {/* Project Tag or Standalone */}
-                      {projectInfo ? (
-                        <div
-                          className="inline-flex items-center space-x-1 px-2 py-1 rounded mb-2"
-                          style={{ backgroundColor: `${projectInfo.color}20` }}
-                        >
+                      {/* Team & Project Tags */}
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {/* Team Badge */}
+                        {task.team && (
+                          <div className="inline-flex items-center space-x-1 px-2 py-1 rounded bg-purple-50">
+                            <svg className="w-3 h-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                            </svg>
+                            <span className="text-xs font-medium text-purple-600">{task.team}</span>
+                          </div>
+                        )}
+
+                        {/* Project Tag or Standalone */}
+                        {projectInfo ? (
                           <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: projectInfo.color }}
-                          />
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: projectInfo.color }}
+                            className="inline-flex items-center space-x-1 px-2 py-1 rounded"
+                            style={{ backgroundColor: `${projectInfo.color}20` }}
                           >
-                            {projectInfo.name}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center space-x-1 px-2 py-1 rounded bg-gray-100 mb-2">
-                          <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          <span className="text-xs font-medium text-gray-600">Standalone</span>
-                        </div>
-                      )}
+                            <div
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: projectInfo.color }}
+                            />
+                            <span
+                              className="text-xs font-medium"
+                              style={{ color: projectInfo.color }}
+                            >
+                              {projectInfo.name}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center space-x-1 px-2 py-1 rounded bg-gray-100">
+                            <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-xs font-medium text-gray-600">Standalone</span>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Assignees & Due Date */}
                       <div className="flex items-center justify-between">

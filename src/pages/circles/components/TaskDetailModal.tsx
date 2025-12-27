@@ -27,6 +27,7 @@ export default function TaskDetailModal({
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.Medium);
   const [status, setStatus] = useState<TaskStatus>(TaskStatus.NotStarted);
   const [projectId, setProjectId] = useState<string>('');
+  const [team, setTeam] = useState<string>('');
   const [assignees, setAssignees] = useState<string[]>([]);
   const [assigneeInput, setAssigneeInput] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -39,6 +40,7 @@ export default function TaskDetailModal({
       setPriority(task.priority);
       setStatus(task.status);
       setProjectId(task.projectId || '');
+      setTeam(task.team || '');
       setAssignees(task.assignees);
       setStartDate(new Date(task.startDate).toISOString().split('T')[0]);
       setEndDate(new Date(task.endDate).toISOString().split('T')[0]);
@@ -81,6 +83,7 @@ export default function TaskDetailModal({
       priority,
       status,
       projectId: projectId || undefined,
+      team: team || undefined,
       assignees,
       startDate: new Date(startDate),
       endDate: new Date(endDate)
@@ -169,6 +172,19 @@ export default function TaskDetailModal({
                   <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-purple-50">
                     <div className="w-3 h-3 rounded-full bg-purple-600"></div>
                     <span className="text-sm font-medium text-purple-900">{project.name}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Team */}
+              {task.team && (
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Team</label>
+                  <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-blue-50">
+                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                    </svg>
+                    <span className="text-sm font-medium text-blue-900">{task.team}</span>
                   </div>
                 </div>
               )}
@@ -303,6 +319,24 @@ export default function TaskDetailModal({
                       {project.name}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              {/* Team */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Team</label>
+                <select
+                  value={team}
+                  onChange={(e) => setTeam(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">No Team</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Product">Product</option>
+                  <option value="Operations">Operations</option>
+                  <option value="Design">Design</option>
                 </select>
               </div>
 
