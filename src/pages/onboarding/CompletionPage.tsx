@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
-import { detectAndSetUserType, clearTutorialData, UserTypeDisplayNames, OnboardingData } from '../../utils/userTypeDetection';
+import { useTutorial } from '../../context/TutorialContext';
+import { detectUserType } from '../../utils/userTypeDetection';
+import { OnboardingData } from '../../types/tutorial';
 
 export default function CompletionPage() {
   const navigate = useNavigate();
   const { data, resetOnboarding } = useOnboarding();
+  const { setUserType, clearAllTutorialData } = useTutorial();
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -18,7 +21,7 @@ export default function CompletionPage() {
     console.log('🎬 Starting tutorial integration process...');
     
     // Clear any existing tutorial data to ensure fresh start
-    clearTutorialData();
+    clearAllTutorialData();
     console.log('🎬 Cleared existing tutorial data');
     
     // Gather onboarding data from context
@@ -35,8 +38,9 @@ export default function CompletionPage() {
     console.log('   • Location:', onboardingData.location);
     
     // Detect and set user type
-    const detectedUserType = detectAndSetUserType(onboardingData);
-    console.log('🎯 User type detected:', UserTypeDisplayNames[detectedUserType]);
+    const detectedUserType = detectUserType(onboardingData);
+    setUserType(detectedUserType);
+    console.log('🎯 User type detected:', detectedUserType);
     
     // Mark onboarding as complete
     localStorage.setItem('just_completed_onboarding', 'true');
@@ -53,7 +57,7 @@ export default function CompletionPage() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [data]);
+  }, [data, setUserType, clearAllTutorialData]);
 
   const handleContinue = () => {
     // Clear onboarding context

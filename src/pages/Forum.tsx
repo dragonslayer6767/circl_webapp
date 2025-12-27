@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTutorial } from '../context/TutorialContext';
 import ForumPost from '../components/forum/ForumPost';
 import CommentsModal from '../components/forum/CommentsModal';
 import NotificationTester from '../components/common/NotificationTester';
@@ -114,6 +115,17 @@ export default function Forum() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPrivacy, setSelectedPrivacy] = useState<string>('public');
   const { user } = useAuth();
+  const { checkAndTriggerTutorial } = useTutorial();
+
+  // Check if tutorial should start after onboarding
+  useEffect(() => {
+    // Small delay to ensure UI is ready
+    const timer = setTimeout(() => {
+      checkAndTriggerTutorial();
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [checkAndTriggerTutorial]);
 
   const handleLike = (post: ForumPostType) => {
     // Optimistic local update only - no API calls

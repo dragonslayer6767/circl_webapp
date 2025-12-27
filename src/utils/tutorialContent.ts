@@ -119,7 +119,7 @@ export function createEntrepreneurTutorial(): TutorialFlow {
       description: 'Make the most of Circl for your startup journey',
       targetView: 'success_tips',
       message:
-        'Pro tips: Update your business profile regularly, engage authentically in circles, be specific about what you're looking for, and always follow up on connections. Consistency builds trust!',
+        "Pro tips: Update your business profile regularly, engage authentically in circles, be specific about what you're looking for, and always follow up on connections. Consistency builds trust!",
       tooltipAlignment: 'center',
       isInteractive: false,
     },

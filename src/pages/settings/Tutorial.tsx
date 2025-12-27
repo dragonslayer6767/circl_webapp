@@ -1,6 +1,21 @@
+import { useState } from 'react';
+import { useTutorial } from '../../context/TutorialContext';
+import { USER_TYPE_LABELS, UserType } from '../../types/tutorial';
 import { COLORS } from '../../utils/colors';
 
 export default function Tutorial() {
+  const { userType, startTutorial, restartTutorial } = useTutorial();
+  const [selectedType, setSelectedType] = useState<UserType>(userType);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const handleStartTutorial = () => {
+    if (selectedType === userType) {
+      restartTutorial();
+    } else {
+      startTutorial(selectedType);
+    }
+  };
+
   const tutorialSteps = [
     {
       title: 'Create Your Profile',
@@ -73,10 +88,78 @@ export default function Tutorial() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">How to Use Circl</h1>
-          <p className="text-gray-600">Get started with our step-by-step guide</p>
+          <p className="text-gray-600">Get started with our interactive tutorial</p>
         </div>
 
-        {/* Tutorial Steps */}
+        {/* Tutorial Type Selector */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Start Interactive Tutorial</h2>
+          <p className="text-gray-600 mb-4">
+            Choose which tutorial you'd like to experience. Each tutorial is customized for different user types.
+          </p>
+          
+          {/* Dropdown */}
+          <div className="relative mb-4">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: COLORS.primary + '20', color: COLORS.primary }}
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="text-sm text-gray-500">Tutorial Type</div>
+                  <div className="font-semibold text-gray-900">{USER_TYPE_LABELS[selectedType]}</div>
+                </div>
+              </div>
+              <svg
+                className={`w-5 h-5 text-gray-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                {(Object.keys(USER_TYPE_LABELS) as UserType[]).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => {
+                      setSelectedType(type);
+                      setShowDropdown(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
+                      selectedType === type ? 'bg-blue-50' : ''
+                    }`}
+                  >
+                    <div className="font-medium text-gray-900">{USER_TYPE_LABELS[type]}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Start Button */}
+          <button
+            onClick={handleStartTutorial}
+            className="w-full py-3 rounded-xl font-bold text-white transition-all transform hover:scale-105 active:scale-95"
+            style={{ backgroundColor: COLORS.primary }}
+          >
+            Start Tutorial
+          </button>
+        </div>
+
+        {/* Tutorial Steps Overview */}
         <div className="space-y-4">
           {tutorialSteps.map((step, index) => (
             <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

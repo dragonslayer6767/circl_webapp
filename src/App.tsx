@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
 import { SubscriptionProvider } from './context/SubscriptionContext';
+import { TutorialProvider } from './context/TutorialContext';
 import { AuthProvider } from './context/AuthContext';
 import { SidebarProvider } from './context/SidebarContext';
 import { CircleViewProvider } from './context/CircleViewContext';
@@ -12,6 +13,7 @@ import { useAuth } from './hooks/useAuth';
 import { AppToaster } from './utils/toast';
 import LoadingScreen from './components/common/LoadingScreen';
 import SubscriptionPaywall from './components/common/SubscriptionPaywall';
+import TutorialOverlay from './components/common/TutorialOverlay';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
 import Forum from './pages/Forum';
@@ -92,12 +94,14 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <SubscriptionProvider>
-              <NotificationProvider>
-                <SidebarProvider>
-                  <CircleViewProvider>
-                    <OnboardingProvider>
-                      <AppToaster />
-                      <SubscriptionPaywall />
+              <TutorialProvider>
+                <NotificationProvider>
+                  <SidebarProvider>
+                    <CircleViewProvider>
+                      <OnboardingProvider>
+                        <AppToaster />
+                        <SubscriptionPaywall />
+                        <TutorialOverlay />
                       <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
@@ -316,6 +320,7 @@ function App() {
                   </CircleViewProvider>
                 </SidebarProvider>
               </NotificationProvider>
+            </TutorialProvider>
             </SubscriptionProvider>
           </AuthProvider>
         </BrowserRouter>

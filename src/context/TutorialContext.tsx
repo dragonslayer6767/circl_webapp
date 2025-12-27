@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { TutorialFlow, TutorialState, TutorialStep, UserType } from '../types/tutorial';
+import { TutorialFlow, TutorialState, UserType } from '../types/tutorial';
 import { getTutorialFlow } from '../utils/tutorialContent';
 
 interface TutorialContextType {
@@ -41,7 +41,7 @@ export const TutorialProvider: React.FC<{ children: ReactNode }> = ({ children }
     const savedProgress = localStorage.getItem('tutorial_progress');
     if (savedProgress) {
       try {
-        const progress = JSON.parse(savedProgress);
+        JSON.parse(savedProgress);
         // Could restore progress here if needed
       } catch (e) {
         console.error('Failed to parse tutorial progress:', e);
