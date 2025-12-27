@@ -64,34 +64,103 @@ export default function SignupFormPage() {
   const { data, updateData, nextStep } = useOnboarding();
   const { addNotification } = useNotification();
 
-  const [firstName, setFirstName] = useState(data.firstName);
-  const [lastName, setLastName] = useState(data.lastName);
-  const [email, setEmail] = useState(data.email);
-  const [phoneNumber, setPhoneNumber] = useState(data.phoneNumber);
-  const [password, setPassword] = useState(data.password);
-  const [confirmPassword, setConfirmPassword] = useState(data.confirmPassword);
-  const [selectedUsageInterest, setSelectedUsageInterest] = useState(data.selectedUsageInterest);
-  const [selectedIndustryInterest, setSelectedIndustryInterest] = useState(data.selectedIndustryInterest);
+  const [firstName, setFirstName] = useState(data?.firstName || '');
+  const [lastName, setLastName] = useState(data?.lastName || '');
+  const [email, setEmail] = useState(data?.email || '');
+  const [phoneNumber, setPhoneNumber] = useState(data?.phoneNumber || '');
+  const [password, setPassword] = useState(data?.password || '');
+  const [confirmPassword, setConfirmPassword] = useState(data?.confirmPassword || '');
+  const [selectedUsageInterest, setSelectedUsageInterest] = useState(data?.selectedUsageInterest || '');
+  const [selectedIndustryInterest, setSelectedIndustryInterest] = useState(data?.selectedIndustryInterest || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$/;
     return emailRegex.test(email);
   };
 
-  const validatePassword = () => {
-    return password.length >= 8 && password === confirmPassword;
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-numeric characters
+    const filtered = value.replace(/\D/g, '');
+    const limited = filtered.substring(0, 10);
+    
+    // Format as xxx-xxx-xxxx
+    let formatted = '';
+    for (let i = 0; i < limited.length; i++) {
+      if (i === 3 || i === 6) {
+        formatted += '-';
+      }
+      formatted += limited[i];
+    }
+    
+    return formatted;
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Check for xxx-xxx-xxxx format
+    const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validatePassword = (password: string): boolean => {
+    return password.length >= 8;
   };
 
   const isFormValid = () => {
     return firstName.trim() !== '' &&
            lastName.trim() !== '' &&
            validateEmail(email) &&
-           phoneNumber.trim() !== '' &&
-           password.length >= 8 &&
+           validatePhoneNumber(phoneNumber) &&
+           validatePassword(password) &&
            password === confirmPassword &&
            selectedUsageInterest !== '' &&
            selectedIndustryInterest !== '';
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value.toLowerCase());
+    if (value && !validateEmail(value)) {
+      setEmailError('Please enter a valid email address');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value);
+    setPhoneNumber(formatted);
+    if (formatted && !validatePhoneNumber(formatted)) {
+      setPhoneError('Phone must be in format: xxx-xxx-xxxx');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (value && !validatePassword(value)) {
+      setPasswordError('Password must be at least 8 characters long');
+    } else {
+      setPasswordError('');
+    }
+  };
+
+  const capitalizeFirstLetter = (value: string): string => {
+    if (!value) return '';
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  };
+
+  const handleFirstNameChange = (value: string) => {
+    setFirstName(capitalizeFirstLetter(value));
+  };
+
+  const handleLastNameChange = (value: string) => {
+    setLastName(capitalizeFirstLetter(value));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -104,61 +173,33 @@ export default function SignupFormPage() {
 
     setIsSubmitting(true);
 
-    try {
-      const response = await fetch('https://circlapp.online/api/users/register/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-          email: email,
-          phone_number: phoneNumber,
-          password: password,
-          main_usage: selectedUsageInterest,
-          industry_interest: selectedIndustryInterest
-        }),
+    // Mock registration - no API call for testing
+    setTimeout(() => {
+      const mockUserId = Date.now(); // Generate mock user ID
+
+      // Store user_id for subsequent requests
+      updateData({
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        password,
+        confirmPassword,
+        selectedUsageInterest,
+        selectedIndustryInterest,
+        userId: mockUserId
       });
 
-      if (response.status === 201) {
-        const data = await response.json();
-        const userId = data.user_id;
+      // Store for tutorial system
+      localStorage.setItem('selected_usage_interest', selectedUsageInterest);
+      localStorage.setItem('selected_industry_interest', selectedIndustryInterest);
+      localStorage.setItem('user_id', mockUserId.toString());
 
-        // Store user_id for subsequent requests
-        updateData({
-          firstName,
-          lastName,
-          email,
-          phoneNumber,
-          password,
-          confirmPassword,
-          selectedUsageInterest,
-          selectedIndustryInterest,
-          userId
-        });
-
-        // Store for tutorial system
-        localStorage.setItem('selected_usage_interest', selectedUsageInterest);
-        localStorage.setItem('selected_industry_interest', selectedIndustryInterest);
-        localStorage.setItem('user_id', userId.toString());
-
-        addNotification('Account created successfully!', 'success');
-        nextStep();
-        navigate('/onboarding/profile-picture');
-      } else if (response.status === 400) {
-        const errorData = await response.json();
-        const errorMessage = errorData.email?.[0] || 'This email is already taken. Please choose a new one.';
-        addNotification(errorMessage, 'error');
-      } else {
-        addNotification(`Registration failed. Status code: ${response.status}`, 'error');
-      }
-    } catch (error) {
-      addNotification('Network error. Please try again.', 'error');
-      console.error('Registration error:', error);
-    } finally {
+      addNotification('Account created successfully!', 'success');
       setIsSubmitting(false);
-    }
+      nextStep();
+      navigate('/onboarding/profile-picture');
+    }, 500);
   };
 
   const allIndustries = industryCategories.flatMap(([_, industries]) => industries).sort();
@@ -168,7 +209,22 @@ export default function SignupFormPage() {
       className="min-h-screen py-12 px-6 relative overflow-y-auto"
       style={{ backgroundColor: COLORS.primary }}
     >
-      {/* Decorative Clouds */}
+      {/* Progress Bar */}
+      <div className="fixed top-0 left-0 right-0 z-20">
+        <div className="h-2 bg-white/20">
+          <div 
+            className="h-full transition-all duration-500 ease-out"
+            style={{ 
+              width: '33.33%',
+              backgroundColor: COLORS.yellow 
+            }}
+          />
+        </div>
+        <div className="text-center py-2" style={{ backgroundColor: COLORS.primary }}>
+          <span className="text-white text-sm font-medium">Step 2 of 6</span>
+        </div>
+      </div>
+
       <div className="absolute top-0 left-0 pointer-events-none opacity-80">
         <div className="relative w-64 h-32">
           <div className="absolute w-30 h-30 bg-white rounded-full" style={{ top: '10px', left: '10px' }}></div>
@@ -176,12 +232,14 @@ export default function SignupFormPage() {
         </div>
       </div>
 
+      {/* Decorative Clouds - Bottom Left */}
       <div className="absolute bottom-0 left-0 pointer-events-none opacity-80">
         <div className="relative w-48 h-24">
           <div className="absolute w-20 h-20 bg-white rounded-full" style={{ bottom: '10px', left: '10px' }}></div>
         </div>
       </div>
 
+      {/* Decorative Clouds - Top Right */}
       <div className="absolute top-0 right-0 pointer-events-none opacity-80">
         <div className="relative w-48 h-24">
           <div className="absolute w-20 h-20 bg-white rounded-full" style={{ top: '10px', right: '10px' }}></div>
@@ -197,16 +255,18 @@ export default function SignupFormPage() {
           <div className="w-48 h-0.5 bg-white mx-auto"></div>
         </div>
 
+        <h2 className="text-2xl font-bold text-white mb-6">Account Details</h2>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
+          {/* Basic Information */}
           <div>
-            <h2 className="text-xl font-bold text-white mb-4">Personal Information</h2>
+            <h2 className="text-xl font-bold text-white mb-4">Basic Information</h2>
             <div className="space-y-3">
               <input
                 type="text"
                 placeholder="First Name"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+                onChange={(e) => handleFirstNameChange(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 required
               />
@@ -215,51 +275,103 @@ export default function SignupFormPage() {
                 type="text"
                 placeholder="Last Name"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+                onChange={(e) => handleLastNameChange(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 required
               />
               
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value.toLowerCase())}
-                className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
-              />
+              <div>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  required
+                />
+                {emailError && email && (
+                  <p className="text-red-300 text-sm mt-1 ml-1">{emailError}</p>
+                )}
+              </div>
               
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
-              />
+              <div>
+                <input
+                  type="tel"
+                  placeholder="Phone Number (xxx-xxx-xxxx)"
+                  value={phoneNumber}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  required
+                />
+                {phoneError && phoneNumber && (
+                  <p className="text-red-300 text-sm mt-1 ml-1">{phoneError}</p>
+                )}
+              </div>
               
-              <input
-                type="password"
-                placeholder="Password (min 8 characters)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
-                minLength={8}
-              />
+              <div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password (min 8 characters)"
+                    value={password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {passwordError && password && (
+                  <p className="text-red-300 text-sm mt-1 ml-1">{passwordError}</p>
+                )}
+              </div>
               
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
-              />
-              
-              {password && confirmPassword && password !== confirmPassword && (
-                <p className="text-red-300 text-sm">Passwords do not match</p>
-              )}
+              <div>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {password && confirmPassword && password !== confirmPassword && (
+                  <p className="text-red-300 text-sm mt-1 ml-1">Passwords do not match</p>
+                )}
+              </div>
             </div>
           </div>
 

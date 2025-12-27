@@ -1,22 +1,20 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
-
-export type NotificationType = 'success' | 'error' | 'info' | 'loading';
-
-export interface Notification {
-  id: string;
-  message: string;
-  type: NotificationType;
-  duration?: number;
-}
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { Notification, NotificationType } from '../types/notifications';
+import { showNotificationToast } from '../utils/toast';
 
 interface NotificationContextType {
-  addNotification: (
-    message: string,
-    type: NotificationType,
-    duration?: number
-  ) => void;
-  removeNotification: (id: string) => void;
+  notifications: Notification[];
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  clearNotification: (id: string) => void;
+  clearAll: () => void;
+  getUnreadCount: () => number;
+  getNonMessagesBadgeCount: () => number;
+  getMessagesBadgeCount: () => number;
+  getNetworkBadgeCount: () => number;
+  getCirclesBadgeCount: () => number;
+  getForumBadgeCount: () => number;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -26,48 +24,117 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const addNotification = (
-    message: string,
-    type: NotificationType = 'info',
-    duration: number = 3000
-  ) => {
-    const id = Math.random().toString(36).substr(2, 9);
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    // Load from localStorage on init
+    const stored = localStorage.getItem('circl_notifications');
+    return stored ? JSON.parse(stored) : [];
+  });
 
-    switch (type) {
-      case 'success':
-        toast.success(message, { id, duration });
-        break;
-      case 'error':
-        toast.error(message, { id, duration });
-        break;
-      case 'loading':
-        toast.loading(message, { id });
-        break;
-      case 'info':
-      default:
-        toast(message, { id, duration });
-        break;
-    }
+  // Persist to localStorage whenever notifications change
+  useEffect(() => {
+    localStorage.setItem('circl_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date(),
+      read: false,
+    };
+
+    setNotifications(prev => [newNotification, ...prev]);
+
+    // Show toast popup
+    showNotificationToast(
+      notification.message,
+      notification.type,
+      getToastDuration(notification.type)
+    );
   };
 
-  const removeNotification = (id: string) => {
-    toast.remove(id);
+  const markAsRead = (id: string) => {
+    setNotifications(prev =>
+      prev.map(n => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const clearNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const clearAll = () => {
+    setNotifications([]);
+  };
+
+  const getUnreadCount = () => {
+    return notifications.filter(n => !n.read).length;
+  };
+
+  const getNonMessagesBadgeCount = () => {
+    return notifications.filter(
+      n => !n.read && n.type !== 'message'
+    ).length;
+  };
+
+  const getMessagesBadgeCount = () => {
+    return notifications.filter(
+      n => !n.read && (n.type === 'message')
+    ).length;
+  };
+
+  const getNetworkBadgeCount = () => {
+    return notifications.filter(
+      n => !n.read && (n.type === 'connection' || n.type === 'mention')
+    ).length;
+  };
+
+  const getCirclesBadgeCount = () => {
+    return notifications.filter(
+      n => !n.read && (n.type === 'circle_invite' || n.type === 'circle_update' || n.type === 'event')
+    ).length;
+  };
+
+  const getForumBadgeCount = () => {
+    return notifications.filter(
+      n => !n.read && (n.type === 'comment' || n.type === 'reply' || n.type === 'like')
+    ).length;
+  };
+
+  const getToastDuration = (type: NotificationType): number => {
+    // Important notifications stay longer
+    const importantTypes: NotificationType[] = ['circle_invite', 'event', 'connection', 'message'];
+    if (importantTypes.includes(type)) return 5000;
+    
+    // Normal notifications
+    const normalTypes: NotificationType[] = ['comment', 'reply', 'like', 'mention', 'circle_update'];
+    if (normalTypes.includes(type)) return 4000;
+    
+    // Background notifications dismiss quickly
+    return 3000;
   };
 
   return (
-    <NotificationContext.Provider value={{ addNotification, removeNotification }}>
-      <Toaster
-        position="top-right"
-        reverseOrder={false}
-        gutter={8}
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-        }}
-      />
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        addNotification,
+        markAsRead,
+        markAllAsRead,
+        clearNotification,
+        clearAll,
+        getUnreadCount,
+        getNonMessagesBadgeCount,
+        getMessagesBadgeCount,
+        getNetworkBadgeCount,
+        getCirclesBadgeCount,
+        getForumBadgeCount,
+      }}
+    >
       {children}
     </NotificationContext.Provider>
   );

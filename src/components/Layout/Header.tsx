@@ -4,6 +4,8 @@ import { COLORS } from '../../utils/colors';
 import { useAuth } from '../../hooks/useAuth';
 import { useCircleView } from '../../context/CircleViewContext';
 import CreateCircleModal from '../circles/CreateCircleModal';
+import NotificationCenter from '../common/NotificationCenter';
+import MessagesNotificationCenter from '../common/MessagesNotificationCenter';
 import { CreateCircleData } from '../../types/circle';
 
 export default function Header() {
@@ -373,6 +375,12 @@ export default function Header() {
             )}
           </div>
           )}
+
+          {/* Notification Centers */}
+          <div className="flex items-center gap-1">
+            <MessagesNotificationCenter />
+            <NotificationCenter />
+          </div>
 
           {/* Circle Creation Modal */}
           <CreateCircleModal

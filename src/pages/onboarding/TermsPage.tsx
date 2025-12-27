@@ -6,8 +6,8 @@ import { useOnboarding } from '../../context/OnboardingContext';
 export default function TermsPage() {
   const navigate = useNavigate();
   const { data, updateData, nextStep } = useOnboarding();
-  const [agreedToTerms, setAgreedToTerms] = useState(data.agreedToTerms);
-  const [agreedToPrivacyPolicy, setAgreedToPrivacyPolicy] = useState(data.agreedToPrivacyPolicy);
+  const [agreedToTerms, setAgreedToTerms] = useState(data?.agreedToTerms || false);
+  const [agreedToPrivacyPolicy, setAgreedToPrivacyPolicy] = useState(data?.agreedToPrivacyPolicy || false);
 
   const handleContinue = () => {
     updateData({ agreedToTerms, agreedToPrivacyPolicy });
@@ -22,7 +22,23 @@ export default function TermsPage() {
       className="min-h-screen flex flex-col items-center justify-center px-8 py-12 relative overflow-hidden"
       style={{ backgroundColor: COLORS.primary }}
     >
-      {/* Decorative Clouds - Top Left */}
+      {/* Progress Bar */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <div className="h-2 bg-white/20">
+          <div 
+            className="h-full transition-all duration-500 ease-out"
+            style={{ 
+              width: '16.67%',
+              backgroundColor: COLORS.yellow 
+            }}
+          />
+        </div>
+        <div className="text-center py-2">
+          <span className="text-white text-sm font-medium">Step 1 of 6</span>
+        </div>
+      </div>
+
+
       <div className="absolute top-0 left-0 pointer-events-none opacity-80">
         <div className="relative w-64 h-32">
           <div className="absolute w-30 h-30 bg-white rounded-full" style={{ top: '10px', left: '10px' }}></div>
@@ -32,7 +48,6 @@ export default function TermsPage() {
         </div>
       </div>
 
-      {/* Decorative Clouds - Bottom Right */}
       <div className="absolute bottom-0 right-0 pointer-events-none opacity-80">
         <div className="relative w-64 h-32">
           <div className="absolute w-30 h-30 bg-white rounded-full" style={{ bottom: '10px', right: '10px' }}></div>

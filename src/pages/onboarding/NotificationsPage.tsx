@@ -6,7 +6,7 @@ import { useOnboarding } from '../../context/OnboardingContext';
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const { data, updateData, nextStep } = useOnboarding();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(data.notificationsEnabled);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(data?.notificationsEnabled || false);
 
   const handleContinue = () => {
     updateData({ notificationsEnabled });
@@ -25,7 +25,23 @@ export default function NotificationsPage() {
       className="min-h-screen flex flex-col items-center justify-center px-8 py-12 relative overflow-hidden"
       style={{ backgroundColor: COLORS.primary }}
     >
-      {/* Decorative Clouds - Top Left */}
+      {/* Progress Bar */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <div className="h-2 bg-white/20">
+          <div 
+            className="h-full transition-all duration-500 ease-out"
+            style={{ 
+              width: '83.33%',
+              backgroundColor: COLORS.yellow 
+            }}
+          />
+        </div>
+        <div className="text-center py-2">
+          <span className="text-white text-sm font-medium">Step 5 of 6</span>
+        </div>
+      </div>
+
+      {/* Decorative Clouds */}
       <div className="absolute top-0 left-0 pointer-events-none opacity-80">
         <div className="relative w-64 h-32">
           <div className="absolute w-30 h-30 bg-white rounded-full" style={{ top: '10px', left: '10px' }}></div>

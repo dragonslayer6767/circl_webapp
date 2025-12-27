@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useSidebar } from '../../context/SidebarContext';
+import { useNotification } from '../../context/NotificationContext';
 import { COLORS } from '../../utils/colors';
 
 interface NavItem {
@@ -16,6 +17,12 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const {
+    getMessagesBadgeCount,
+    getNetworkBadgeCount,
+    getCirclesBadgeCount,
+    getForumBadgeCount,
+  } = useNotification();
 
   const navItems: NavItem[] = [
     {
@@ -80,6 +87,21 @@ export default function Sidebar() {
       ),
     },
   ];
+
+  const getBadgeCount = (itemId: string): number => {
+    switch (itemId) {
+      case 'messages':
+        return getMessagesBadgeCount();
+      case 'network':
+        return getNetworkBadgeCount();
+      case 'circles':
+        return getCirclesBadgeCount();
+      case 'home':
+        return getForumBadgeCount();
+      default:
+        return 0;
+    }
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -152,11 +174,12 @@ export default function Sidebar() {
       <nav className="flex-1 py-4">
         {navItems.map((item) => {
           const active = isActive(item.path);
+          const badgeCount = getBadgeCount(item.id);
           return (
             <button
               key={item.id}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center space-x-3 px-6 py-3 transition-all ${
+              className={`w-full flex items-center space-x-3 px-6 py-3 transition-all relative ${
                 active 
                   ? 'bg-white/20 rounded-xl mx-3' 
                   : 'hover:bg-white/10'
@@ -164,11 +187,16 @@ export default function Sidebar() {
               style={{ color: 'white' }}
               title={isCollapsed ? item.label : undefined}
             >
-              <div className={isCollapsed ? 'mx-auto' : ''}>
+              <div className={`relative ${isCollapsed ? 'mx-auto' : ''}`}>
                 {item.icon}
+                {badgeCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full animate-pulse">
+                    {badgeCount > 99 ? '99+' : badgeCount}
+                  </span>
+                )}
               </div>
               {!isCollapsed && (
-                <span className="font-medium">
+                <span className="font-medium flex-1">
                   {item.label}
                 </span>
               )}

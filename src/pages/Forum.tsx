@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useNotification } from '../context/NotificationContext';
 import ForumPost from '../components/forum/ForumPost';
 import CommentsModal from '../components/forum/CommentsModal';
+import NotificationTester from '../components/common/NotificationTester';
 import { ForumPost as ForumPostType } from '../types/forum';
 import { COLORS } from '../utils/colors';
 
@@ -114,7 +114,6 @@ export default function Forum() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPrivacy, setSelectedPrivacy] = useState<string>('public');
   const { user } = useAuth();
-  const { addNotification } = useNotification();
 
   const handleLike = (post: ForumPostType) => {
     // Optimistic local update only - no API calls
@@ -144,7 +143,6 @@ export default function Forum() {
   const handleDelete = (postId: number) => {
     // Local delete only - no API calls
     setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
-    addNotification('Post deleted', 'success');
   };
 
   const handleProfileClick = (_userId: number) => {
@@ -440,6 +438,9 @@ export default function Forum() {
           postTimestamp={selectedPost.created_at}
         />
       )}
+
+      {/* Notification Tester */}
+      <NotificationTester />
     </div>
   );
 }

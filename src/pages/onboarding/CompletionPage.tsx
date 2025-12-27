@@ -2,19 +2,50 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
+import { detectAndSetUserType, clearTutorialData, UserTypeDisplayNames, OnboardingData } from '../../utils/userTypeDetection';
 
 export default function CompletionPage() {
   const navigate = useNavigate();
-  const { resetOnboarding } = useOnboarding();
+  const { data, resetOnboarding } = useOnboarding();
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     // Trigger confetti animation
     setShowConfetti(true);
 
+    // Detect and set user type based on onboarding responses
+    console.log('🎬 ========= ONBOARDING COMPLETION PROCESS =========');
+    console.log('🎬 Starting tutorial integration process...');
+    
+    // Clear any existing tutorial data to ensure fresh start
+    clearTutorialData();
+    console.log('🎬 Cleared existing tutorial data');
+    
+    // Gather onboarding data from context
+    const onboardingData: OnboardingData = {
+      usageInterests: data?.selectedUsageInterest || '',
+      industryInterests: data?.selectedIndustryInterest || '',
+      location: data?.location || '',
+      userGoals: undefined
+    };
+    
+    console.log('🎬 Gathered onboarding data:');
+    console.log('   • Usage interests:', onboardingData.usageInterests);
+    console.log('   • Industry interests:', onboardingData.industryInterests);
+    console.log('   • Location:', onboardingData.location);
+    
+    // Detect and set user type
+    const detectedUserType = detectAndSetUserType(onboardingData);
+    console.log('🎯 User type detected:', UserTypeDisplayNames[detectedUserType]);
+    
     // Mark onboarding as complete
     localStorage.setItem('just_completed_onboarding', 'true');
     localStorage.setItem('onboarding_completed', 'true');
+    
+    console.log('✅ Onboarding flags set:');
+    console.log('   • just_completed_onboarding: true');
+    console.log('   • onboarding_completed: true');
+    console.log('✅ Tutorial will start after navigation to Forum');
 
     // Auto-hide confetti after 3 seconds
     const timer = setTimeout(() => {
@@ -22,7 +53,7 @@ export default function CompletionPage() {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [data]);
 
   const handleContinue = () => {
     // Clear onboarding context
@@ -56,6 +87,22 @@ export default function CompletionPage() {
         background: `linear-gradient(to bottom, ${COLORS.primary}, #0066cc)`
       }}
     >
+      {/* Progress Bar */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <div className="h-2 bg-white/20">
+          <div 
+            className="h-full transition-all duration-500 ease-out"
+            style={{ 
+              width: '100%',
+              backgroundColor: COLORS.yellow 
+            }}
+          />
+        </div>
+        <div className="text-center py-2">
+          <span className="text-white text-sm font-medium">Step 6 of 6 - Complete!</span>
+        </div>
+      </div>
+
       {/* Confetti Animation */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">

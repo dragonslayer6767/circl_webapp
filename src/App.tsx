@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -7,6 +8,8 @@ import { SidebarProvider } from './context/SidebarContext';
 import { CircleViewProvider } from './context/CircleViewContext';
 import { OnboardingProvider } from './context/OnboardingContext';
 import { useAuth } from './hooks/useAuth';
+import { AppToaster } from './utils/toast';
+import LoadingScreen from './components/common/LoadingScreen';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
 import Forum from './pages/Forum';
@@ -70,6 +73,17 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 function App() {
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
+
+  const handleLoadingComplete = () => {
+    setShowLoadingScreen(false);
+  };
+
+  // Show loading screen on every load/reload
+  if (showLoadingScreen) {
+    return <LoadingScreen onComplete={handleLoadingComplete} duration={3000} />;
+  }
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -79,6 +93,7 @@ function App() {
               <SidebarProvider>
                 <CircleViewProvider>
                   <OnboardingProvider>
+                    <AppToaster />
                     <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />

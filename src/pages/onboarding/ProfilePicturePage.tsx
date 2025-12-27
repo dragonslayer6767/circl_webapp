@@ -1,32 +1,40 @@
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useNotification } from '../../context/NotificationContext';
+
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+  'image/bmp'
+];
 
 export default function ProfilePicturePage() {
   const navigate = useNavigate();
   const { data, updateData, nextStep } = useOnboarding();
   const { addNotification } = useNotification();
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(data.profilePicture);
+  const [selectedImage, setSelectedImage] = useState<string | null>(data?.profilePicture || null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageSelect = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const validateAndProcessFile = (file: File) => {
+    // Check file type
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      addNotification('Please select a valid image file (JPG, PNG, GIF, WebP, SVG, BMP)', 'error');
+      return false;
+    }
 
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       addNotification('Image must be less than 5MB', 'error');
-      return;
-    }
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      addNotification('Please select an image file', 'error');
-      return;
+      return false;
     }
 
     // Create preview
@@ -36,6 +44,45 @@ export default function ProfilePicturePage() {
       setSelectedImage(imageData);
     };
     reader.readAsDataURL(file);
+    return true;
+  };
+
+  const handleImageSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    validateAndProcessFile(file);
+  };
+
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set dragging to false if leaving the main container
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      validateAndProcessFile(file);
+    }
   };
 
   const handleUpload = async () => {
@@ -75,8 +122,39 @@ export default function ProfilePicturePage() {
     <div 
       className="min-h-screen flex flex-col items-center justify-center px-8 py-12 relative overflow-hidden"
       style={{ backgroundColor: COLORS.primary }}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
-      {/* Decorative Clouds */}
+      {/* Progress Bar */}
+      <div className="absolute top-0 left-0 right-0 z-20">
+        <div className="h-2 bg-white/20">
+          <div 
+            className="h-full transition-all duration-500 ease-out"
+            style={{ 
+              width: '50%',
+              backgroundColor: COLORS.yellow 
+            }}
+          />
+        </div>
+        <div className="text-center py-2">
+          <span className="text-white text-sm font-medium">Step 3 of 6</span>
+        </div>
+      </div>
+
+      {isDragging && (
+        <div className="absolute inset-0 bg-blue-500/10 backdrop-blur-sm z-50 flex items-center justify-center border-4 border-dashed border-blue-500 rounded-lg pointer-events-none">
+          <div className="text-center">
+            <svg className="w-16 h-16 mx-auto mb-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p className="text-lg font-semibold text-blue-600">Drop image here to upload</p>
+            <p className="text-sm text-gray-500">JPG, PNG, GIF, WebP, SVG, BMP supported</p>
+          </div>
+        </div>
+      )}
+
       <div className="absolute top-0 right-0 pointer-events-none opacity-80">
         <div className="relative w-64 h-32">
           <div className="absolute w-30 h-30 bg-white rounded-full" style={{ top: '10px', right: '10px' }}></div>
@@ -127,8 +205,8 @@ export default function ProfilePicturePage() {
                   <svg className="w-12 h-12 mb-2" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
                   </svg>
-                  <span className="text-sm font-medium" style={{ color: COLORS.primary }}>
-                    Tap to add photo
+                  <span className="text-sm font-medium text-center px-4" style={{ color: COLORS.primary }}>
+                    Tap to add photo<br />or drag and drop an image here
                   </span>
                 </div>
               )}
@@ -138,7 +216,7 @@ export default function ProfilePicturePage() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml,image/bmp"
             onChange={handleImageSelect}
             className="hidden"
           />
