@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, ReactNode } from 'react';
+import React from 'react';
 
 interface Panel {
   id: string;
@@ -19,13 +20,47 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
   const [startX, setStartX] = useState<number>(0);
   const [startWidths, setStartWidths] = useState<number[]>([]);
 
-  // Initialize widths evenly when panels change
+  // Initialize widths evenly when panels change or container is mounted
   useEffect(() => {
-    if (panels.length > 0 && containerRef.current) {
-      const containerWidth = containerRef.current.offsetWidth;
-      const equalWidth = containerWidth / panels.length;
-      setWidths(new Array(panels.length).fill(equalWidth));
-    }
+    const initializeWidths = () => {
+      if (panels.length > 0 && containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        if (containerWidth > 0) {
+          const equalWidth = containerWidth / panels.length;
+          setWidths(new Array(panels.length).fill(equalWidth));
+        }
+      }
+    };
+
+    // Initialize immediately
+    initializeWidths();
+
+    // Add a small delay to ensure container is rendered
+    const timeoutId = setTimeout(initializeWidths, 100);
+
+    // Handle window resize
+    const handleResize = () => {
+      if (containerRef.current && widths.length === panels.length) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const totalCurrentWidth = widths.reduce((a, b) => a + b, 0);
+        if (totalCurrentWidth > 0) {
+          // Scale proportionally
+          const scale = containerWidth / totalCurrentWidth;
+          setWidths(widths.map(w => w * scale));
+        } else {
+          // Reinitialize
+          const equalWidth = containerWidth / panels.length;
+          setWidths(new Array(panels.length).fill(equalWidth));
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [panels.length]);
 
   const handleMouseDown = (index: number) => (e: React.MouseEvent) => {
@@ -85,28 +120,30 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
   return (
     <div 
       ref={containerRef}
-      className="flex h-full w-full"
+      className="flex h-full w-full overflow-hidden bg-gray-50"
       style={{ 
         cursor: isDragging !== null ? 'col-resize' : 'default',
         userSelect: isDragging !== null ? 'none' : 'auto'
       }}
     >
       {panels.map((panel, index) => (
-        <div key={panel.id} style={{ display: 'flex' }}>
+        <React.Fragment key={panel.id}>
           {/* Panel Content */}
           <div
-            className="h-full overflow-auto bg-white flex-shrink-0"
+            className="h-full overflow-y-auto overflow-x-hidden bg-white"
             style={{
-              width: widths[index] ? `${widths[index]}px` : 'auto',
+              width: widths[index] ? `${widths[index]}px` : `${100 / panels.length}%`,
+              minWidth: '250px',
+              flexShrink: 0,
             }}
           >
             {/* Panel Header */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
-              <h3 className="font-semibold text-gray-900 text-sm">{panel.title}</h3>
+              <h3 className="font-semibold text-gray-900 text-sm truncate">{panel.title}</h3>
               {onClose && (
                 <button
                   onClick={() => onClose(panel.id)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 transition-colors ml-2 flex-shrink-0"
                   title="Close panel"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +154,7 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
             </div>
 
             {/* Panel Body */}
-            <div className="p-4" style={{ backgroundColor: '#f5f5f5' }}>
+            <div className="p-4 overflow-x-hidden" style={{ backgroundColor: '#f5f5f5' }}>
               {panel.content}
             </div>
           </div>
@@ -135,7 +172,7 @@ export default function ResizablePanels({ panels, onClose }: ResizablePanelsProp
               </div>
             </div>
           )}
-        </div>
+        </React.Fragment>
       ))}
     </div>
   );

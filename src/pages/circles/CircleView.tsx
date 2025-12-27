@@ -201,8 +201,11 @@ export default function CircleView() {
   const togglePanel = (panelType: PanelType) => {
     setActivePanels((prev) => {
       if (prev.includes(panelType)) {
-        // Remove panel
-        return prev.filter((p) => p !== panelType);
+        // Remove panel - but keep at least one panel
+        if (prev.length > 1) {
+          return prev.filter((p) => p !== panelType);
+        }
+        return prev;
       } else {
         // Add panel (max 3)
         if (prev.length >= 3) {
@@ -214,7 +217,13 @@ export default function CircleView() {
   };
 
   const removePanel = (panelId: string) => {
-    setActivePanels((prev) => prev.filter((p) => p !== panelId));
+    setActivePanels((prev) => {
+      // Keep at least one panel
+      if (prev.length > 1) {
+        return prev.filter((p) => p !== panelId);
+      }
+      return prev;
+    });
   };
 
   // Render panel content based on type (simplified for panel view)
@@ -253,11 +262,11 @@ export default function CircleView() {
     if (!circle) return null;
     
     return (
-      <>
+      <div className="w-full">
         {/* Announcements Section */}
         <div className="mb-6">
           <div className="flex items-center space-x-2 mb-3">
-            <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 flex-shrink-0" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 24 24">
               <path d="M21.88 8.61c.1.51.12 1.02.12 1.53 0 .51-.02 1.02-.12 1.53-.98 5.19-5.69 9.08-11.17 9.08-1.08 0-2.13-.14-3.15-.42l-2.88 2.88c-.24.24-.64.24-.88 0-.24-.24-.24-.64 0-.88l2.88-2.88c-2.78-1.93-4.65-5.05-4.65-8.63 0-.51.02-1.02.12-1.53.98-5.19 5.69-9.08 11.17-9.08 1.08 0 2.13.14 3.15.42l2.88-2.88c.24-.24.64-.24.88 0 .24.24.24.64 0 .88l-2.88 2.88c2.78 1.93 4.65 5.05 4.65 8.63zm-11.88-6.46c-4.27 0-8.02 3.15-8.66 7.35-.07.41-.11.83-.11 1.25 0 .42.04.84.11 1.25.64 4.2 4.39 7.35 8.66 7.35s8.02-3.15 8.66-7.35c.07-.41.11-.83.11-1.25 0-.42-.04-.84-.11-1.25-.64-4.2-4.39-7.35-8.66-7.35zm0 4.5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z" />
             </svg>
             <h2 className="text-base font-bold text-gray-900">Announcements</h2>
@@ -266,15 +275,15 @@ export default function CircleView() {
           {announcements.map((announcement) => (
             <div 
               key={announcement.id}
-              className="rounded-2xl px-5 py-4 cursor-pointer hover:opacity-90 transition-opacity mb-3"
+              className="rounded-2xl px-4 py-3 cursor-pointer hover:opacity-90 transition-opacity mb-3 w-full"
               style={{ backgroundColor: COLORS.primary }}
             >
               <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold text-base">{announcement.title}</h3>
-                  <p className="text-white text-sm mt-1 opacity-90">By {announcement.created_by} · {announcement.created_at}</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold text-sm truncate">{announcement.title}</h3>
+                  <p className="text-white text-xs mt-1 opacity-90 truncate">By {announcement.created_by} · {announcement.created_at}</p>
                 </div>
-                <svg className="w-5 h-5 text-white flex-shrink-0 ml-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-white flex-shrink-0 ml-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -285,16 +294,16 @@ export default function CircleView() {
         {/* Circle Threads Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <div>
+            <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-gray-900">Circle Threads</h2>
               <p className="text-xs text-gray-500 mt-0.5">Share ideas and discussions</p>
             </div>
             <button
               onClick={() => setShowCreateThread(true)}
-              className="flex items-center space-x-1.5 text-white font-semibold px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all text-xs"
+              className="flex items-center space-x-1.5 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all text-xs flex-shrink-0 ml-2"
               style={{ backgroundColor: COLORS.primary }}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
               <span>New</span>
@@ -302,35 +311,35 @@ export default function CircleView() {
           </div>
 
           {/* Threads Grid (not horizontal scroll in panels) */}
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {threads.length > 0 ? (
               threads.map((thread) => (
                 <div 
                   key={thread.id}
-                  className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full"
                 >
-                  <div className="flex items-center space-x-2.5 mb-3">
+                  <div className="flex items-center space-x-2.5 mb-2">
                     <div 
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
                       style={{ backgroundColor: COLORS.primary }}
                     >
                       {thread.author.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-gray-900">{thread.author}</div>
+                      <div className="font-semibold text-xs text-gray-900 truncate">{thread.author}</div>
                       <div className="text-xs text-gray-500">{thread.created_at}</div>
                     </div>
                   </div>
-                  <p className="text-gray-800 text-sm mb-4">{thread.content}</p>
-                  <div className="flex items-center space-x-5 text-sm text-gray-500">
-                    <button className="flex items-center space-x-1.5 hover:text-red-500 transition-colors">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <p className="text-gray-800 text-xs mb-3 line-clamp-3">{thread.content}</p>
+                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <button className="flex items-center space-x-1 hover:text-red-500 transition-colors">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                       <span className="text-xs">{thread.likes}</span>
                     </button>
-                    <button className="flex items-center space-x-1.5 hover:text-blue-600 transition-colors">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button className="flex items-center space-x-1 hover:text-blue-600 transition-colors">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                       </svg>
                       <span className="text-xs">{thread.comments}</span>
@@ -340,7 +349,7 @@ export default function CircleView() {
               ))
             ) : (
               <div 
-                className="h-32 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed"
+                className="h-32 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed w-full"
                 style={{ borderColor: `${COLORS.primary}20`, backgroundColor: `${COLORS.primary}05` }}
               >
                 <svg className="w-7 h-7 mb-2 opacity-40" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
@@ -353,47 +362,47 @@ export default function CircleView() {
         </div>
 
         {/* Channels Section */}
-        <div>
+        <div className="w-full">
           <div className="flex items-center justify-between mb-4">
-            <div>
+            <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-gray-900">Channels</h2>
               <p className="text-xs text-gray-500 mt-0.5">Join conversations by topic</p>
             </div>
             <div 
-              className="px-2.5 py-1 rounded-full text-xs font-semibold"
+              className="px-2.5 py-1 rounded-full text-xs font-semibold flex-shrink-0 ml-2"
               style={{ backgroundColor: `${COLORS.primary}15`, color: COLORS.primary }}
             >
-              {channels.length} channels
+              {channels.length}
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 w-full">
             {channels.map((channel) => (
               <button
                 key={channel.id}
                 onClick={() => navigate(`/circles/${circleId}/channel/${channel.id}`)}
-                className="w-full flex items-center justify-between bg-white rounded-xl px-4 py-3 hover:bg-gray-50 transition-colors group"
+                className="w-full flex items-center justify-between bg-white rounded-xl px-3 py-2.5 hover:bg-gray-50 transition-colors group"
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2.5 flex-1 min-w-0">
                   <div 
-                    className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-sm"
+                    className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0"
                     style={{ backgroundColor: `${COLORS.primary}`, color: 'white' }}
                   >
                     #
                   </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-sm text-gray-900">#{channel.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">Tap to join conversation</div>
+                  <div className="text-left flex-1 min-w-0">
+                    <div className="font-semibold text-xs text-gray-900 truncate">#{channel.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 truncate">Tap to join</div>
                   </div>
                 </div>
-                <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             ))}
           </div>
         </div>
-      </>
+      </div>
     );
   };
 
@@ -791,15 +800,17 @@ export default function CircleView() {
         </>
       ) : (
         // Multi-panel mode
-        <div className="h-[calc(100vh-8rem)]">
-          <ResizablePanels
-            panels={activePanels.map((panelType) => ({
-              id: panelType,
-              title: getPanelTitle(panelType),
-              content: renderPanelContent(panelType),
-            }))}
-            onClose={activePanels.length > 1 ? removePanel : undefined}
-          />
+        <div className="h-[calc(100vh-8rem)] px-5" style={{ backgroundColor: '#f5f5f5' }}>
+          <div className="max-w-7xl mx-auto h-full">
+            <ResizablePanels
+              panels={activePanels.map((panelType) => ({
+                id: panelType,
+                title: getPanelTitle(panelType),
+                content: renderPanelContent(panelType),
+              }))}
+              onClose={removePanel}
+            />
+          </div>
         </div>
       )}
 
