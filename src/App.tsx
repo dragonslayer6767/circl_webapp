@@ -4,6 +4,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
 import { AuthProvider } from './context/AuthContext';
 import { SidebarProvider } from './context/SidebarContext';
+import { CircleViewProvider } from './context/CircleViewContext';
+import { OnboardingProvider } from './context/OnboardingContext';
 import { useAuth } from './hooks/useAuth';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
@@ -28,6 +30,12 @@ import BusinessProfile from './pages/BusinessProfile';
 import Circles from './pages/Circles';
 import CircleView from './pages/circles/CircleView';
 import ChannelChatView from './pages/circles/ChannelChatView';
+import TermsPage from './pages/onboarding/TermsPage';
+import SignupFormPage from './pages/onboarding/SignupFormPage';
+import ProfilePicturePage from './pages/onboarding/ProfilePicturePage';
+import PersonalInfoPage from './pages/onboarding/PersonalInfoPage';
+import NotificationsPage from './pages/onboarding/NotificationsPage';
+import CompletionPage from './pages/onboarding/CompletionPage';
 import './App.css';
 
 // Create a client for React Query
@@ -69,9 +77,19 @@ function App() {
           <AuthProvider>
             <NotificationProvider>
               <SidebarProvider>
-                <Routes>
+                <CircleViewProvider>
+                  <OnboardingProvider>
+                    <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
+                
+                {/* Onboarding Routes */}
+                <Route path="/onboarding/terms" element={<TermsPage />} />
+                <Route path="/onboarding/signup" element={<SignupFormPage />} />
+                <Route path="/onboarding/profile-picture" element={<ProfilePicturePage />} />
+                <Route path="/onboarding/personal-info" element={<PersonalInfoPage />} />
+                <Route path="/onboarding/notifications" element={<NotificationsPage />} />
+                <Route path="/onboarding/complete" element={<CompletionPage />} />
                 
                 {/* TEMPORARY: Forum, Network, and Messages are public for development */}
                 <Route
@@ -274,13 +292,15 @@ function App() {
                 
                 {/* 404 Route */}
                 <Route path="*" element={<Navigate to="/forum" replace />} />
-                </Routes>
+                    </Routes>
+                  </OnboardingProvider>
+                </CircleViewProvider>
               </SidebarProvider>
-            </NotificationProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </ErrorBoundary>
+          </NotificationProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </ErrorBoundary>
   );
 }
 

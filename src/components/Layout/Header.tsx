@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useAuth } from '../../hooks/useAuth';
+import { useCircleView } from '../../context/CircleViewContext';
 import CreateCircleModal from '../circles/CreateCircleModal';
 import { CreateCircleData } from '../../types/circle';
 
 export default function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  const { isPanelMode, setIsPanelMode } = useCircleView();
   const [showCompletionPopup, setShowCompletionPopup] = useState(false);
   const [showCreateCirclePopup, setShowCreateCirclePopup] = useState(false);
   const [showCircleCreationModal, setShowCircleCreationModal] = useState(false);
@@ -74,6 +77,9 @@ export default function Header() {
     }
   };
 
+  // Check if we're on a circle view page
+  const isOnCircleView = /^\/circles\/\d+/.test(location.pathname);
+
   return (
     <header 
       className="fixed top-0 left-0 right-0 z-50"
@@ -92,6 +98,32 @@ export default function Header() {
 
         {/* Right side indicators */}
         <div className="flex items-center gap-2">
+          {/* Circle View Mode Toggle - Only show on circle pages */}
+          {isOnCircleView && (
+            <div className="flex items-center space-x-2 bg-white rounded-lg shadow-lg p-1">
+              <button
+                onClick={() => setIsPanelMode(false)}
+                className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                  !isPanelMode 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Single View
+              </button>
+              <button
+                onClick={() => setIsPanelMode(true)}
+                className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
+                  isPanelMode 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Multi-Panel
+              </button>
+            </div>
+          )}
+
           {/* Create Circle Indicator */}
           <div className="relative">
             <button

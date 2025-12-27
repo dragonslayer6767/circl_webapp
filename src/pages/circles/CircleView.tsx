@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { Circle } from '../../types/circle';
+import { useCircleView } from '../../context/CircleViewContext';
 import CalendarView from './components/CalendarView';
 import DashboardView from './components/DashboardView';
 import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
@@ -37,6 +38,7 @@ type PanelType = 'home' | 'dashboard' | 'calendar';
 export default function CircleView() {
   const { circleId } = useParams<{ circleId: string }>();
   const navigate = useNavigate();
+  const { isPanelMode } = useCircleView();
   
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [activePanels, setActivePanels] = useState<PanelType[]>(['home']);
@@ -49,7 +51,6 @@ export default function CircleView() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCircleSwitcher, setShowCircleSwitcher] = useState(false);
   const [showCreateThread, setShowCreateThread] = useState(false);
-  const [isPanelMode, setIsPanelMode] = useState(false);
 
   useEffect(() => {
     if (circleId) {
@@ -653,33 +654,6 @@ export default function CircleView() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
-      {/* Floating View Mode Toggle */}
-      <div className="fixed top-20 left-4 z-30 flex items-center space-x-2 bg-white rounded-lg shadow-lg p-1">
-        <button
-          onClick={() => {
-            setIsPanelMode(false);
-            setActivePanels([activeTab]);
-          }}
-          className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
-            !isPanelMode 
-              ? 'bg-blue-600 text-white' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
-        >
-          Single View
-        </button>
-        <button
-          onClick={() => setIsPanelMode(true)}
-          className={`px-3 py-2 rounded-md text-xs font-medium transition-all ${
-            isPanelMode 
-              ? 'bg-blue-600 text-white' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
-        >
-          Multi-Panel
-        </button>
-      </div>
-
       {/* Header with Tabs and Panel Controls */}
       <div className="sticky top-16 z-20" style={{ backgroundColor: COLORS.primary }}>
         {!isPanelMode ? (
@@ -760,16 +734,6 @@ export default function CircleView() {
                   );
                 })}
               </div>
-              
-              <button
-                onClick={() => {
-                  setIsPanelMode(false);
-                  setActivePanels([activeTab]);
-                }}
-                className="text-white text-opacity-70 hover:text-opacity-100 text-xs font-medium"
-              >
-                Exit Multi-Panel
-              </button>
             </div>
           </div>
         )}

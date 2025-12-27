@@ -3,9 +3,10 @@ import { TaskItem, TaskStatus, TaskPriority, Project } from '../../../types/dash
 interface KanbanBoardProps {
   tasks: TaskItem[];
   projects: Project[];
+  onTaskClick?: (task: TaskItem) => void;
 }
 
-export default function KanbanBoard({ tasks, projects }: KanbanBoardProps) {
+export default function KanbanBoard({ tasks, projects, onTaskClick }: KanbanBoardProps) {
   const statusColumns = [
     TaskStatus.NotStarted,
     TaskStatus.InProgress,
@@ -82,6 +83,7 @@ export default function KanbanBoard({ tasks, projects }: KanbanBoardProps) {
                   return (
                     <div
                       key={task.id}
+                      onClick={() => onTaskClick?.(task)}
                       className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
                     >
                       {/* Priority & Title */}

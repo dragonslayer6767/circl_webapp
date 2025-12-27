@@ -69,7 +69,7 @@ export default function Login() {
   };
 
   const handleJoinCircl = () => {
-    navigate('/signup');
+    navigate('/onboarding/terms');
   };
 
   return (

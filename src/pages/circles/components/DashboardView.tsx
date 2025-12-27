@@ -11,6 +11,8 @@ import {
 } from '../../../types/dashboard';
 import KanbanBoard from './KanbanBoard.tsx';
 import ProjectGrid from './ProjectGrid.tsx';
+import CreateTaskModal, { TaskFormData } from './CreateTaskModal';
+import TaskDetailModal from './TaskDetailModal';
 
 interface DashboardViewProps {
   circleId: number;
@@ -40,6 +42,9 @@ export default function DashboardView({
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [projects, setProjects] = useState<Project[]>([]);
   const [standaloneTasks, setStandaloneTasks] = useState<TaskItem[]>([]);
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
+  const [showTaskDetail, setShowTaskDetail] = useState(false);
 
   useEffect(() => {
     loadMockData();
@@ -160,6 +165,61 @@ export default function DashboardView({
     setLeaderboard(mockLeaderboard);
     setProjects(mockProjects);
     setStandaloneTasks(mockStandaloneTasks);
+  };
+
+  const handleTaskCreated = (taskData: TaskFormData) => {
+    const newTask: TaskItem = {
+      id: `task-${Date.now()}`,
+      ...taskData,
+      createdAt: new Date()
+    };
+
+    if (taskData.projectId) {
+      // Add to project tasks
+      setProjects(prev => prev.map(p => 
+        p.id === taskData.projectId 
+          ? { ...p, tasks: [...p.tasks, newTask] }
+          : p
+      ));
+    } else {
+      // Add to standalone tasks
+      setStandaloneTasks(prev => [...prev, newTask]);
+    }
+  };
+
+  const handleTaskUpdated = (taskId: string, updates: Partial<TaskItem>) => {
+    // Update in standalone tasks
+    setStandaloneTasks(prev =>
+      prev.map(task => task.id === taskId ? { ...task, ...updates } : task)
+    );
+
+    // Update in project tasks
+    setProjects(prev =>
+      prev.map(project => ({
+        ...project,
+        tasks: project.tasks.map(task =>
+          task.id === taskId ? { ...task, ...updates } : task
+        )
+      }))
+    );
+  };
+
+  const handleTaskDeleted = (taskId: string) => {
+    // Remove from standalone tasks
+    setStandaloneTasks(prev => prev.filter(task => task.id !== taskId));
+
+    // Remove from project tasks
+    setProjects(prev =>
+      prev.map(project => ({
+        ...project,
+        tasks: project.tasks.filter(task => task.id !== taskId)
+      }))
+    );
+  };
+
+  const handleTaskClick = (task: TaskItem) => {
+    setSelectedTask(task);
+    setShowTaskDetail(true);
   };
 
   const allTasks = [
@@ -313,9 +373,10 @@ export default function DashboardView({
             </div>
             {isModerator && (
               <button
-                onClick={() => console.log('Create task/project')}
+                onClick={() => setShowCreateTask(true)}
                 className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                 style={{ color: COLORS.primary }}
+                title="Create new task"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
@@ -326,7 +387,7 @@ export default function DashboardView({
         </div>
 
         {viewMode === 'kanban' ? (
-          <KanbanBoard tasks={allTasks} projects={projects} />
+          <KanbanBoard tasks={allTasks} projects={projects} onTaskClick={handleTaskClick} />
         ) : (
           <ProjectGrid projects={projects} />
         )}
@@ -383,6 +444,29 @@ export default function DashboardView({
           </div>
         )}
       </div>
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        isOpen={showCreateTask}
+        onClose={() => setShowCreateTask(false)}
+        onTaskCreated={handleTaskCreated}
+        projects={projects}
+        circleId={circleId}
+      />
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        isOpen={showTaskDetail}
+        onClose={() => {
+          setShowTaskDetail(false);
+          setSelectedTask(null);
+        }}
+        task={selectedTask}
+        projects={projects}
+        onTaskUpdated={handleTaskUpdated}
+        onTaskDeleted={handleTaskDeleted}
+        isModerator={isModerator}
+      />
     </div>
   );
 }
