@@ -10,6 +10,7 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
   const [logoScale, setLogoScale] = useState(0.8);
   const [logoOpacity, setLogoOpacity] = useState(0);
   const [backgroundImage, setBackgroundImage] = useState('');
+  const [currentTip, setCurrentTip] = useState('');
 
   // Array of available loading screens
   const loadingScreens = [
@@ -21,10 +22,40 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
     'loadingscreen6.png',
   ];
 
+  // Array of tips and advice
+  const tips = [
+    "Swipe left on bad ideas, not on mentors.",
+    "Collaboration > ego. Unless you're a lone wolf, in which case… good luck.",
+    "Team chat is like traffic: the more you ignore it, the worse it gets.",
+    "Remember, your business plan is not a cheat code. Until you start executing and learning.",
+    "Deadline? Pfft. Time is just a social construct, right?",
+    "Your competitors aren't your enemies… except when they are.",
+    "KPIs don't lie, but people sure do. Check both.",
+    "Mentors aren't magic; they're cheat codes with homework.",
+    "Ideas are cheap. Execution is priceless.",
+    "Your MVP doesn't have to be perfect. Just not catastrophic.",
+    "Trust your instincts… and also your legal counsel.",
+    "Logging one task a day keeps chaos at bay… maybe.",
+    "Steve Jobs didn't invent everything. He just made the world want it.",
+    "Your roadmap isn't Candy Crush: don't just swipe and hope for the best.",
+    "Airbnb didn't just rent beds, they sold experiences. What's your twist?",
+    "Twitter may be full of drama, but hey, at least it's free market research.",
+    "Mark Cuban would probably tell you to hustle harder… or buy a boat. Both work.",
+    "Don't just chase funding chase clarity first.",
+    "Good ideas age like milk if you don't act fast.",
+    "Start small, fail fast, learn faster.",
+    "Yes, your app can crash spectacularly. Welcome to the club.",
+    "Hackathons: because sleep is for losers.",
+  ];
+
   useEffect(() => {
     // Randomly select a loading screen
     const randomScreen = loadingScreens[Math.floor(Math.random() * loadingScreens.length)];
     setBackgroundImage(randomScreen);
+
+    // Randomly select a tip
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    setCurrentTip(randomTip);
 
     // Animate logo appearance
     setTimeout(() => {
@@ -81,6 +112,20 @@ export default function LoadingScreen({ onComplete, duration = 3000 }: LoadingSc
               filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5))',
             }}
           />
+        </div>
+
+        {/* Tip Bubble */}
+        <div className="px-6 max-w-2xl mx-auto mb-8">
+          <div 
+            className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-2xl border-2 border-white border-opacity-40"
+            style={{
+              opacity: logoOpacity,
+            }}
+          >
+            <p className="text-gray-800 text-center text-sm md:text-base font-medium leading-relaxed">
+              💡 <span className="italic">{currentTip}</span>
+            </p>
+          </div>
         </div>
 
         {/* Loading Indicator */}
