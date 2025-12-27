@@ -87,12 +87,30 @@ export default function Header() {
       className="fixed top-0 left-0 right-0 z-50"
       style={{ backgroundColor: COLORS.primary }}
     >
-      <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between shadow-sm">
+      <div className="h-16 max-w-7xl mx-auto pl-0 pr-4 flex items-center justify-between shadow-sm">
         {/* Logo */}
         <div 
-          className="flex items-center cursor-pointer"
+          className="flex items-center gap-2 cursor-pointer ml-2"
           onClick={() => navigate('/forum')}
         >
+          <div 
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer hover:opacity-80 transition-opacity"
+            style={{ backgroundColor: user?.fullname || user?.email ? COLORS.yellow : '#E5E7EB' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('/profile');
+            }}
+          >
+            {user?.fullname || user?.email ? (
+              <span className="font-bold text-sm">
+                {user?.fullname ? user.fullname.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase()}
+              </span>
+            ) : (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" style={{ color: COLORS.primary }}>
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              </svg>
+            )}
+          </div>
           <span className="text-2xl font-bold text-white hidden sm:block">
             Circl.
           </span>

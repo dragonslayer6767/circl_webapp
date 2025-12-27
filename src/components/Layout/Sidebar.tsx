@@ -51,8 +51,11 @@ export default function Sidebar() {
       label: 'Circles',
       path: '/circles',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <circle cx="7" cy="7" r="3.5" />
+          <circle cx="17" cy="7" r="3.5" />
+          <circle cx="7" cy="17" r="3.5" />
+          <circle cx="17" cy="17" r="3.5" />
         </svg>
       ),
     },
@@ -61,8 +64,9 @@ export default function Sidebar() {
       label: 'Growth Hub',
       path: '/growth',
       icon: (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.736 6.979C9.208 6.193 9.696 6 10 6c.304 0 .792.193 1.264.979a1 1 0 001.715-1.029C12.279 4.784 11.232 4 10 4s-2.279.784-2.979 1.95c-.285.475-.507 1-.67 1.55H6a1 1 0 000 2h.013a9.358 9.358 0 000 1H6a1 1 0 100 2h.351c.163.55.385 1.075.67 1.55C7.721 15.216 8.768 16 10 16s2.279-.784 2.979-1.95a1 1 0 10-1.715-1.029c-.472.786-.96.979-1.264.979-.304 0-.792-.193-1.264-.979a4.265 4.265 0 01-.264-.521H10a1 1 0 100-2H8.017a7.36 7.36 0 010-1H10a1 1 0 100-2H8.472c.08-.185.167-.36.264-.521z" />
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" strokeWidth="2" />
+          <path strokeWidth="2" strokeLinecap="round" d="M12 6v12M9 9h4.5a1.5 1.5 0 010 3H9m4.5 0a1.5 1.5 0 010 3H9" />
         </svg>
       ),
     },
@@ -134,45 +138,8 @@ export default function Sidebar() {
         </svg>
       </button>
 
-      {/* User Profile Section */}
-      {!isCollapsed && (
-        <div 
-          className="p-6 border-b border-white/20 cursor-pointer hover:bg-white/5 transition-colors"
-          onClick={() => navigate('/profile')}
-        >
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-              style={{ backgroundColor: COLORS.yellow }}
-            >
-              {user?.fullname ? user.fullname.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {user?.fullname || 'User'}
-              </p>
-              <p className="text-xs text-white/70 truncate">
-                {user?.email}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isCollapsed && (
-        <div className="p-4 border-b border-white/20 flex justify-center">
-          <div 
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:opacity-80 transition-opacity"
-            style={{ backgroundColor: COLORS.yellow }}
-            onClick={() => navigate('/profile')}
-          >
-            {user?.fullname ? user.fullname.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
-          </div>
-        </div>
-      )}
-
       {/* Navigation Items */}
-      <nav className="flex-1 py-2">
+      <nav className="flex-1 py-2 mt-8">
         {navItems.map((item) => {
           const active = isActive(item.path);
           const badgeCount = getBadgeCount(item.id);
