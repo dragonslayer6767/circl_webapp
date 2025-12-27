@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useSidebar } from '../../context/SidebarContext';
 import { useNotification } from '../../context/NotificationContext';
 import { COLORS } from '../../utils/colors';
+import QuickTaskWidget from './QuickTaskWidget';
 
 interface NavItem {
   id: string;
@@ -171,7 +172,7 @@ export default function Sidebar() {
       )}
 
       {/* Navigation Items */}
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-2">
         {navItems.map((item) => {
           const active = isActive(item.path);
           const badgeCount = getBadgeCount(item.id);
@@ -179,9 +180,9 @@ export default function Sidebar() {
             <button
               key={item.id}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center space-x-3 px-6 py-3 transition-all relative ${
+              className={`w-full flex items-center space-x-2 px-4 py-2 transition-all relative ${
                 active 
-                  ? 'bg-white/20 rounded-xl mx-3' 
+                  ? 'bg-white/20 rounded-xl mx-2' 
                   : 'hover:bg-white/10'
               }`}
               style={{ color: 'white' }}
@@ -190,13 +191,13 @@ export default function Sidebar() {
               <div className={`relative ${isCollapsed ? 'mx-auto' : ''}`}>
                 {item.icon}
                 {badgeCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full animate-pulse">
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
                     {badgeCount > 99 ? '99+' : badgeCount}
                   </span>
                 )}
               </div>
               {!isCollapsed && (
-                <span className="font-medium flex-1">
+                <span className="font-medium flex-1 text-sm">
                   {item.label}
                 </span>
               )}
@@ -204,6 +205,9 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Quick Task Widget */}
+      <QuickTaskWidget isCollapsed={isCollapsed} />
 
       {/* Logout Button */}
       <div className="p-4 border-t border-white/20">

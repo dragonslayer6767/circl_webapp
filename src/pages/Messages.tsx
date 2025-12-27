@@ -217,7 +217,7 @@ export default function Messages() {
                     {conversation.userName.charAt(0).toUpperCase()}
                   </div>
                   {conversation.unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
                       <span className="text-xs text-white font-bold">{conversation.unreadCount}</span>
                     </div>
                   )}

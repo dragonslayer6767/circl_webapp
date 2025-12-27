@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -11,6 +11,7 @@ import { CircleViewProvider } from './context/CircleViewContext';
 import { OnboardingProvider } from './context/OnboardingContext';
 import { useAuth } from './hooks/useAuth';
 import { AppToaster } from './utils/toast';
+import { initializeSampleTasks } from './utils/taskHelpers';
 import LoadingScreen from './components/common/LoadingScreen';
 import SubscriptionPaywall from './components/common/SubscriptionPaywall';
 import TutorialOverlay from './components/common/TutorialOverlay';
@@ -82,6 +83,11 @@ function App() {
   const handleLoadingComplete = () => {
     setShowLoadingScreen(false);
   };
+
+  // Initialize sample tasks on first load
+  useEffect(() => {
+    initializeSampleTasks();
+  }, []);
 
   // Show loading screen on every load/reload
   if (showLoadingScreen) {
