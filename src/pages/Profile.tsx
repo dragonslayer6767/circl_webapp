@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../utils/colors';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../context/SubscriptionContext';
 import ProfileCompletionBanner from '../components/common/ProfileCompletionBanner';
 
 interface ProfileData {
@@ -27,6 +28,7 @@ interface ProfileData {
 export default function Profile() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showPaywall } = useSubscription();
   const [activeTab, setActiveTab] = useState<'profile' | 'business'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -247,6 +249,7 @@ export default function Profile() {
 
         {/* Upgrade to Premium Button */}
         <button 
+          onClick={() => showPaywall('entrepreneur')}
           className="w-full rounded-2xl p-4 mb-6 shadow-lg flex items-center justify-between group hover:shadow-xl transition-all"
           style={{ background: `linear-gradient(90deg, ${COLORS.primary}, #0066ff)` }}
         >

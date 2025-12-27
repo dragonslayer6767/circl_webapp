@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
+import { SubscriptionProvider } from './context/SubscriptionContext';
 import { AuthProvider } from './context/AuthContext';
 import { SidebarProvider } from './context/SidebarContext';
 import { CircleViewProvider } from './context/CircleViewContext';
@@ -10,6 +11,7 @@ import { OnboardingProvider } from './context/OnboardingContext';
 import { useAuth } from './hooks/useAuth';
 import { AppToaster } from './utils/toast';
 import LoadingScreen from './components/common/LoadingScreen';
+import SubscriptionPaywall from './components/common/SubscriptionPaywall';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
 import Forum from './pages/Forum';
@@ -89,12 +91,14 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <NotificationProvider>
-              <SidebarProvider>
-                <CircleViewProvider>
-                  <OnboardingProvider>
-                    <AppToaster />
-                    <Routes>
+            <SubscriptionProvider>
+              <NotificationProvider>
+                <SidebarProvider>
+                  <CircleViewProvider>
+                    <OnboardingProvider>
+                      <AppToaster />
+                      <SubscriptionPaywall />
+                      <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
                 
@@ -308,14 +312,15 @@ function App() {
                 {/* 404 Route */}
                 <Route path="*" element={<Navigate to="/forum" replace />} />
                     </Routes>
-                  </OnboardingProvider>
-                </CircleViewProvider>
-              </SidebarProvider>
-          </NotificationProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </ErrorBoundary>
+                    </OnboardingProvider>
+                  </CircleViewProvider>
+                </SidebarProvider>
+              </NotificationProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
