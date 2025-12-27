@@ -149,6 +149,12 @@ export const TutorialProvider: React.FC<{ children: ReactNode }> = ({ children }
         completedFlows.push(currentFlow.userType);
         localStorage.setItem('completed_tutorial_flows', JSON.stringify(completedFlows));
       }
+      
+      // Set flag to show post-tutorial overlay
+      const justCompletedOnboarding = localStorage.getItem('just_completed_onboarding');
+      if (justCompletedOnboarding === 'true') {
+        localStorage.setItem('show_post_tutorial_overlay', 'true');
+      }
     }
     
     setCurrentFlow(null);

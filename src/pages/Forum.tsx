@@ -119,19 +119,20 @@ export default function Forum() {
   const { user } = useAuth();
   const { checkAndTriggerTutorial } = useTutorial();
 
-  // Check if should show post-onboarding overlay, then tutorial
+  // Check if should show post-tutorial overlay or trigger tutorial
   useEffect(() => {
     const justCompleted = localStorage.getItem('just_completed_onboarding');
-    const hasSeenOverlay = localStorage.getItem('seen_post_onboarding_overlay');
+    const showPostTutorial = localStorage.getItem('show_post_tutorial_overlay');
+    const hasSeenOverlay = localStorage.getItem('seen_post_tutorial_overlay');
     
-    if (justCompleted === 'true' && hasSeenOverlay !== 'true') {
-      // Show post-onboarding overlay first
+    if (showPostTutorial === 'true' && hasSeenOverlay !== 'true') {
+      // Show post-tutorial overlay after tutorial completes
       const timer = setTimeout(() => {
         setShowPostOnboarding(true);
       }, 500);
       return () => clearTimeout(timer);
     } else if (justCompleted === 'true') {
-      // If already seen overlay, trigger tutorial
+      // Trigger tutorial if just completed onboarding and haven't shown yet
       const timer = setTimeout(() => {
         checkAndTriggerTutorial();
       }, 1500);
@@ -141,11 +142,9 @@ export default function Forum() {
 
   const handleClosePostOnboarding = () => {
     setShowPostOnboarding(false);
-    localStorage.setItem('seen_post_onboarding_overlay', 'true');
-    // After closing overlay, trigger tutorial
-    setTimeout(() => {
-      checkAndTriggerTutorial();
-    }, 500);
+    localStorage.setItem('seen_post_tutorial_overlay', 'true');
+    localStorage.removeItem('show_post_tutorial_overlay');
+    localStorage.removeItem('just_completed_onboarding');
   };
 
   const handleLike = (post: ForumPostType) => {
