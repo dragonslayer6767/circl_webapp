@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useAuth } from '../../hooks/useAuth';
+import ProfileModal from '../../components/networking/ProfileModal';
+import { NetworkUser } from '../../types/network';
 
 interface ChatMessage {
   id: string;
@@ -35,6 +37,31 @@ export default function ChannelChatView() {
   const [showDashboardMemberListModal, setShowDashboardMemberListModal] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
   const [availableChannels, setAvailableChannels] = useState<{ id: string; name: string }[]>([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<NetworkUser | null>(null);
+
+  // Handler to open user profile
+  const handleUserProfileClick = (message: ChatMessage) => {
+    // Don't open profile for current user's own messages
+    if (message.senderId === 1) return;
+
+    // Convert ChatMessage sender to NetworkUser format
+    const networkUser: NetworkUser = {
+      user_id: message.senderId,
+      email: '',
+      name: message.senderName,
+      businessIndustry: 'Technology',
+      location: 'San Francisco, CA',
+      connectionsCount: 150,
+      circs: 800,
+      bio: `Member of ${circleName}`,
+      skills: ['Leadership', 'Collaboration', 'Innovation'],
+      profileImageURL: message.senderAvatar
+    };
+
+    setSelectedUser(networkUser);
+    setShowProfileModal(true);
+  };
 
   useEffect(() => {
     // TODO: Fetch channel and circle details from API
@@ -288,7 +315,11 @@ export default function ChannelChatView() {
             >
               <div className={`flex items-end space-x-2 max-w-[70%] ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
                 {/* Avatar - always show on the side of the bubble */}
-                <div className="flex-shrink-0">
+                <button
+                  onClick={() => handleUserProfileClick(message)}
+                  className={`flex-shrink-0 ${isCurrentUser ? 'cursor-default' : 'cursor-pointer hover:opacity-80 transition-opacity'}`}
+                  disabled={isCurrentUser}
+                >
                   {message.senderAvatar ? (
                     <img
                       src={message.senderAvatar}
@@ -303,7 +334,7 @@ export default function ChannelChatView() {
                       {message.senderName.charAt(0)}
                     </div>
                   )}
-                </div>
+                </button>
 
                 {/* Message Bubble */}
                 <div>
@@ -739,6 +770,28 @@ export default function ChannelChatView() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Profile Modal */}
+      {showProfileModal && selectedUser && (
+        <ProfileModal
+          user={selectedUser}
+          isOpen={showProfileModal}
+          onClose={() => {
+            setShowProfileModal(false);
+            setSelectedUser(null);
+          }}
+          isInNetwork={false}
+          onConnect={() => {
+            console.log('Connect with user:', selectedUser.name);
+            // TODO: Implement connect functionality
+          }}
+          onMessage={() => {
+            setShowProfileModal(false);
+            setSelectedUser(null);
+            navigate(`/messages/${selectedUser.user_id}`);
+          }}
+        />
       )}
     </div>
   );
