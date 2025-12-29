@@ -8,6 +8,8 @@ import DashboardView from './components/DashboardView';
 import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
 import CreateThreadModal from './components/CreateThreadModal';
 import ResizablePanels from '../../components/circles/ResizablePanels';
+import AnnouncementCard from './components/AnnouncementCard';
+import ThreadDetailModal from './components/ThreadDetailModal';
 
 interface Announcement {
   id: number;
@@ -51,6 +53,7 @@ export default function CircleView() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCircleSwitcher, setShowCircleSwitcher] = useState(false);
   const [showCreateThread, setShowCreateThread] = useState(false);
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
 
   useEffect(() => {
     if (circleId) {
@@ -275,23 +278,22 @@ export default function CircleView() {
             <h2 className="text-base font-bold text-gray-900">Announcements</h2>
           </div>
 
-          {announcements.map((announcement) => (
-            <div 
-              key={announcement.id}
-              className="rounded-2xl px-4 py-3 cursor-pointer hover:opacity-90 transition-opacity mb-3 w-full"
-              style={{ backgroundColor: COLORS.primary }}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-semibold text-sm truncate">{announcement.title}</h3>
-                  <p className="text-white text-xs mt-1 opacity-90 truncate">By {announcement.created_by} · {announcement.created_at}</p>
-                </div>
-                <svg className="w-4 h-4 text-white flex-shrink-0 ml-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          ))}
+          <div className="space-y-3">
+            {announcements.map((announcement) => (
+              <AnnouncementCard
+                key={announcement.id}
+                id={announcement.id}
+                title={announcement.title}
+                content={announcement.content}
+                created_by={announcement.created_by}
+                created_at={announcement.created_at}
+                onDelete={(announcementId: number) => {
+                  setAnnouncements(announcements.filter(a => a.id !== announcementId));
+                }}
+                canDelete={circle?.is_moderator || false}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Circle Threads Section */}
@@ -319,6 +321,7 @@ export default function CircleView() {
               threads.map((thread) => (
                 <div 
                   key={thread.id}
+                  onClick={() => setSelectedThread(thread)}
                   className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full"
                 >
                   <div className="flex items-center space-x-2.5 mb-2">
@@ -492,23 +495,22 @@ export default function CircleView() {
               <h2 className="text-base font-bold text-gray-900">Announcements</h2>
             </div>
 
-            {announcements.map((announcement) => (
-              <div 
-                key={announcement.id}
-                className="rounded-2xl px-5 py-4 cursor-pointer hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: COLORS.primary }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold text-base">{announcement.title}</h3>
-                    <p className="text-white text-sm mt-1 opacity-90">By {announcement.created_by} · {announcement.created_at}</p>
-                  </div>
-                  <svg className="w-5 h-5 text-white flex-shrink-0 ml-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            ))}
+            <div className="space-y-3">
+              {announcements.map((announcement) => (
+                <AnnouncementCard
+                  key={announcement.id}
+                  id={announcement.id}
+                  title={announcement.title}
+                  content={announcement.content}
+                  created_by={announcement.created_by}
+                  created_at={announcement.created_at}
+                  onDelete={(announcementId: number) => {
+                    setAnnouncements(announcements.filter(a => a.id !== announcementId));
+                  }}
+                  canDelete={circle?.is_moderator || false}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Circle Threads Section */}
@@ -537,6 +539,7 @@ export default function CircleView() {
                   threads.map((thread) => (
                     <div 
                       key={thread.id}
+                      onClick={() => setSelectedThread(thread)}
                       className="flex-shrink-0 w-64 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                     >
                       <div className="flex items-center space-x-2.5 mb-3">
@@ -795,6 +798,13 @@ export default function CircleView() {
           }}
         />
       )}
+
+      {/* Thread Detail Modal */}
+      <ThreadDetailModal
+        isOpen={selectedThread !== null}
+        onClose={() => setSelectedThread(null)}
+        thread={selectedThread}
+      />
     </div>
   );
 }
