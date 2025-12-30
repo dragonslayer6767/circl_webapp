@@ -4,137 +4,51 @@ import { COLORS } from '../utils/colors';
 import { useAuth } from '../hooks/useAuth';
 import { Circle, CreateCircleData } from '../types/circle';
 import CreateCircleModal from '../components/circles/CreateCircleModal';
-
-// API Base URL - TODO: Move to env file
-const API_BASE = 'http://localhost:8000/api'; // Replace with your actual API URL
+import { circleService } from '../services/circleServices';
 
 export default function Circles() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'explore' | 'myCircles'>('explore');
   const [searchText, setSearchText] = useState('');
-  const [exploreCircles, setExploreCircles] = useState<Circle[]>([]);
-  const [myCircles, setMyCircles] = useState<Circle[]>([]);
+  const [exploreCircles, setExploreCircles] = useState<any[]>([]);
+  const [myCircles, setMyCircles] = useState<any[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
+  const [selectedCircle, setSelectedCircle] = useState<any | null>(null);
   const [showAccessCodePrompt, setShowAccessCodePrompt] = useState(false);
   const [accessCodeInput, setAccessCodeInput] = useState('');
-  const [circlePendingJoin, setCirclePendingJoin] = useState<Circle | null>(null);
+  const [circlePendingJoin, setCirclePendingJoin] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load circles on mount (using mock data for now)
+    // Load circles on mount from API
     loadCircles();
   }, []);
 
   const loadCircles = async () => {
-    const currentUserId = user?.user_id || 1;
-
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
-      // For development: Use mock data by default
-      // TODO: Replace with actual API calls when backend is ready
-      console.log('About to set myCircles and exploreCircles');
-      setMyCircles([
-        {
-          id: 1,
-          name: 'Tech Leaders Council',
-          industry: 'Technology',
-          pricing: 'Premium',
-          description: 'An exclusive circle for technology leaders to discuss innovation, strategy, and industry trends. Share insights on digital transformation and emerging technologies.',
-          join_type: 'Join Now',
-          member_count: 42,
-          is_private: false,
-          creator_id: currentUserId,
-          is_moderator: true,
-          profile_image_url: undefined
-        },
-        {
-          id: 2,
-          name: 'Growth Hackers',
-          industry: 'Marketing',
-          pricing: '',
-          description: 'Connect with growth-focused professionals. Discuss strategies, tactics, and tools for scaling businesses rapidly.',
-          join_type: 'Join Now',
-          member_count: 156,
-          is_private: false,
-          creator_id: 5,
-          is_moderator: false,
-          profile_image_url: undefined
-        }
-      ]);
-
-      setExploreCircles([
-        {
-          id: 10,
-          name: 'Startup Founders',
-          industry: 'Technology',
-          pricing: '',
-          description: 'A community for startup founders to connect, share experiences, and learn from each other. Discuss fundraising, product development, and scaling.',
-          join_type: 'Join Now',
-          member_count: 234,
-          is_private: false,
-          creator_id: 3,
-          is_moderator: false,
-          profile_image_url: undefined
-        },
-        {
-          id: 11,
-          name: 'Product Managers Circle',
-          industry: 'Product Management',
-          pricing: 'Premium',
-          description: 'Where product leaders gather. Discuss user research, roadmapping, metrics, and best practices in product management.',
-          join_type: 'Apply Now',
-          member_count: 89,
-          is_private: false,
-          creator_id: 7,
-          is_moderator: false,
-          profile_image_url: undefined
-        },
-        {
-          id: 12,
-          name: 'Designer Network',
-          industry: 'Design',
-          pricing: '',
-          description: 'Design professionals sharing work, feedback, and inspiration. Discuss UX/UI trends, design systems, and career development.',
-          join_type: 'Join Now',
-          member_count: 312,
-          is_private: false,
-          creator_id: 6,
-          is_moderator: false,
-          profile_image_url: undefined
-        },
-        {
-          id: 13,
-          name: 'Enterprise Leaders',
-          industry: 'Enterprise',
-          pricing: 'Premium',
-          description: 'Exclusive circle for C-suite executives and enterprise leaders. Discuss business strategy, M&A, and organizational transformation.',
-          join_type: 'Request to Join',
-          member_count: 45,
-          is_private: true,
-          creator_id: 8,
-          is_moderator: false,
-          profile_image_url: undefined
-        }
-      ]);
-
-      // Uncomment below when API is ready:
-      /*
-      const myCirclesRes = await fetch(`${API_BASE}/circles/my_circles/${user.user_id}/`);
-      if (!myCirclesRes.ok) throw new Error('Failed to fetch my circles');
-      const myCirclesData = await myCirclesRes.json();
+      // Get circles user is member of
+      const myCirclesData = await circleService.getCircles();
       setMyCircles(Array.isArray(myCirclesData) ? myCirclesData : []);
 
-      const exploreRes = await fetch(`${API_BASE}/circles/explore_circles/${user.user_id}/`);
-      if (!exploreRes.ok) throw new Error('Failed to fetch explore circles');
-      const exploreData = await exploreRes.json();
-      setExploreCircles(Array.isArray(exploreData) ? exploreData : []);
-      */
+      // Get all circles (explore view)
+      // We'll fetch paginated results for explore
+      const exploreData = await circleService.getCirclesPaginated(1, 50);
+      const allCircles = exploreData.results || [];
+      
+      // Filter to show circles user is NOT a member of in explore tab
+      const myCircleIds = (Array.isArray(myCirclesData) ? myCirclesData : []).map(c => c.id);
+      const nonMemberCircles = allCircles.filter(c => !myCircleIds.includes(c.id));
+      
+      setExploreCircles(nonMemberCircles);
     } catch (error) {
       console.error('Failed to load circles:', error);
+      setErrorMessage('Failed to load circles. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -144,57 +58,47 @@ export default function Circles() {
     if (!user?.user_id) return;
 
     try {
-      const response = await fetch(`${API_BASE}/circles/create_with_channels/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
+      // Create the circle payload matching the circleService API interface
+      const payload = {
+        name: data.name,
+        description: data.description,
+        is_public: !data.is_private, // API uses is_public, not is_private
+      };
 
-      if (!response.ok) {
-        throw new Error('Failed to create circle');
-      }
-
+      await circleService.createCircle(payload);
+      
+      // Reload circles after creating
       await loadCircles();
       setShowCreateModal(false);
     } catch (error) {
       console.error('Failed to create circle:', error);
+      setErrorMessage('Failed to create circle. Please try again.');
       throw error;
     }
   };
 
-  const handleJoinCircle = async (circle: Circle) => {
+  const handleJoinCircle = async (circle: any) => {
     if (!user?.user_id) return;
 
-    // Check if private circle
-    if (circle.is_private) {
+    // Check if private circle (is_private field from API)
+    const isPrivate = circle.is_private || !circle.is_public;
+    if (isPrivate) {
       setCirclePendingJoin(circle);
       setShowAccessCodePrompt(true);
       return;
     }
 
     try {
-      const response = await fetch(`${API_BASE}/circles/join_circle/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user_id: user.user_id,
-          circle_id: circle.id
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to join circle');
-      }
-
+      await circleService.joinCircle(circle.id);
+      
+      // Reload circles after joining
       await loadCircles();
+      
       // Navigate to circle after joining
       navigate(`/circles/${circle.id}`);
     } catch (error) {
       console.error('Failed to join circle:', error);
+      setErrorMessage('Failed to join circle. Please try again.');
       alert('Failed to join circle. Please try again.');
     }
   };
@@ -203,35 +107,27 @@ export default function Circles() {
     if (!user?.user_id || !circlePendingJoin || !accessCodeInput.trim()) return;
 
     try {
-      const response = await fetch(`${API_BASE}/circles/join_circle/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          user_id: user.user_id,
-          circle_id: circlePendingJoin.id,
-          access_code: accessCodeInput.trim()
-        })
-      });
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          alert('Invalid access code');
-          return;
-        }
-        throw new Error('Failed to join circle');
-      }
-
+      await circleService.joinCircle(circlePendingJoin.id, accessCodeInput.trim());
+      
+      // Reload circles after joining
       await loadCircles();
+      
       setShowAccessCodePrompt(false);
       setAccessCodeInput('');
+      const circleToNavigate = circlePendingJoin;
       setCirclePendingJoin(null);
+      
       // Navigate to circle after joining
-      navigate(`/circles/${circlePendingJoin.id}`);
+      navigate(`/circles/${circleToNavigate.id}`);
     } catch (error) {
       console.error('Failed to join circle:', error);
-      alert('Failed to join circle. Please try again.');
+      if ((error as any).response?.status === 403) {
+        setErrorMessage('Invalid access code');
+        alert('Invalid access code');
+      } else {
+        setErrorMessage('Failed to join circle. Please try again.');
+        alert('Failed to join circle. Please try again.');
+      }
     }
   };
 
@@ -322,6 +218,21 @@ export default function Circles() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-5 pb-24">
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
+            <span className="text-red-700 text-sm font-medium">{errorMessage}</span>
+            <button
+              onClick={() => setErrorMessage(null)}
+              className="text-red-600 hover:text-red-800 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Header Section */}
         <div className="flex items-center justify-between mb-5">
           <div>

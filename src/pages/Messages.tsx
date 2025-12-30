@@ -80,7 +80,7 @@ export default function Messages() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/20 to-blue-50/10">
+    <div className="min-h-screen bg-white">
       {/* Search Section */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 p-6 sticky top-16 z-10">
         <div className="max-w-4xl mx-auto">
@@ -122,7 +122,7 @@ export default function Messages() {
                     <div key={user.id}>
                       <button
                         onClick={() => handleUserSelect(user)}
-                        className="w-full px-4 py-3 hover:bg-blue-50 transition-colors flex items-center space-x-3 group"
+                        className="w-full px-4 py-3 hover:bg-gray-50 transition-colors flex items-center space-x-3 group"
                       >
                         <div 
                           className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 transition-transform group-hover:scale-110"
@@ -134,7 +134,7 @@ export default function Messages() {
                           <p className="font-medium text-gray-900">{user.name}</p>
                           <p className="text-sm text-gray-500">{user.company || 'Network Connection'}</p>
                         </div>
-                        <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
@@ -204,7 +204,7 @@ export default function Messages() {
                 onClick={() => navigate(`/chat/${conversation.userId}`)}
                 className={`w-full rounded-2xl shadow-sm hover:shadow-md transition-all hover:scale-[1.02] p-5 flex items-start space-x-4 group ${
                   conversation.unreadCount > 0 
-                    ? 'bg-blue-50/60 border-2 border-blue-200' 
+                    ? 'bg-gray-50 border-2 border-gray-200' 
                     : 'bg-white border border-gray-100'
                 }`}
               >
@@ -230,14 +230,14 @@ export default function Messages() {
                       {conversation.userName}
                     </h3>
                     <span className={`text-sm flex-shrink-0 ml-2 font-medium ${
-                      conversation.unreadCount > 0 ? 'text-blue-600' : 'text-gray-500'
+                      conversation.unreadCount > 0 ? 'text-gray-700' : 'text-gray-500'
                     }`}>
                       {conversation.timestamp}
                     </span>
                   </div>
                   <div className={`rounded-xl px-4 py-2.5 ${
                     conversation.unreadCount > 0 
-                      ? 'bg-white border-2 border-blue-100' 
+                      ? 'bg-gray-100 border-2 border-gray-200' 
                       : 'bg-gray-50 border border-gray-100'
                   }`}>
                     <p className={`text-sm line-clamp-2 ${
@@ -248,8 +248,8 @@ export default function Messages() {
                   </div>
                   {conversation.unreadCount > 0 && (
                     <div className="flex items-center gap-1 mt-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                      <span className="text-xs font-semibold text-blue-600">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                      <span className="text-xs font-semibold text-gray-700">
                         {conversation.unreadCount} new message{conversation.unreadCount !== 1 ? 's' : ''}
                       </span>
                     </div>

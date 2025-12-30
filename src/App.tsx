@@ -45,6 +45,8 @@ import PersonalInfoPage from './pages/onboarding/PersonalInfoPage';
 import NotificationsPage from './pages/onboarding/NotificationsPage';
 import CompletionPage from './pages/onboarding/CompletionPage';
 import TestUserProfile from './pages/TestUserProfile';
+import TestProfilePicture from './pages/TestProfilePicture';
+import TestCircles from './pages/TestCircles';
 import './App.css';
 
 // Create a client for React Query
@@ -162,6 +164,10 @@ function App() {
                   path="/chat/:userId"
                   element={<ChatView />}
                 />
+
+                {/* Test Pages */}
+                <Route path="/test-profile-picture" element={<TestProfilePicture />} />
+                <Route path="/test-circles" element={<TestCircles />} />
 
                 <Route
                   path="/circles"
@@ -322,6 +328,15 @@ function App() {
                   element={
                     <MainLayout>
                       <TestUserProfile />
+                    </MainLayout>
+                  }
+                />
+
+                <Route
+                  path="/test-profile-picture"
+                  element={
+                    <MainLayout>
+                      <TestProfilePicture />
                     </MainLayout>
                   }
                 />

@@ -4,6 +4,7 @@ import { COLORS } from '../utils/colors';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../context/SubscriptionContext';
 import ProfileCompletionBanner from '../components/common/ProfileCompletionBanner';
+import { userService } from '../services/userServices';
 
 interface ProfileData {
   id: number;
@@ -32,9 +33,9 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<'profile' | 'business'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [connections, setConnections] = useState(0);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   
-  // Editable fields
+  // ...existing code...
   const [bio, setBio] = useState('');
   const [birthday, setBirthday] = useState('');
   const [personalityType, setPersonalityType] = useState('');
@@ -77,19 +78,58 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    // TODO: Fetch profile data from API
-    // Mock data for now
-    const mockProfile: ProfileData = {
-      id: user?.user_id || 49,
-      first_name: user?.fullname?.split(' ')[0] || 'Fragne',
-      last_name: user?.fullname?.split(' ')[1] || 'Delgado',
-      full_name: user?.fullname || 'Fragne Delgado',
-      email: user?.email || 'fragne@example.com',
-      bio: '',
-      circs: 122
+    const fetchProfile = async () => {
+      try {
+        const profile = await userService.getCurrentProfile();
+        setProfileData({
+          id: profile.user_id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          full_name: profile.fullname,
+          email: profile.email,
+          profile_image: profile.profile_image ? userService.getProfileImageUrl(profile.profile_image) : undefined,
+          bio: profile.bio,
+          birthday: profile.birthday,
+          personality_type: profile.personality_type,
+          institution_attended: profile.institution_attended,
+          years_of_experience: profile.years_of_experience,
+          locations: profile.locations,
+          skillsets: profile.skillsets,
+          clubs: profile.clubs,
+          hobbies: profile.hobbies,
+          entrepreneurial_history: profile.entrepreneurial_history,
+          circs: 122,
+        });
+        
+        // Set editable fields from profile
+        if (profile.bio) setBio(profile.bio);
+        if (profile.birthday) setBirthday(profile.birthday);
+        if (profile.personality_type) setPersonalityType(profile.personality_type);
+        if (profile.institution_attended) setInstitution(profile.institution_attended);
+        if (profile.years_of_experience) setExperience(profile.years_of_experience.toString());
+        if (profile.locations) setLocations(profile.locations.join(', '));
+        if (profile.skillsets) setSkills(profile.skillsets.join(', '));
+        if (profile.clubs) setClubs(profile.clubs.join(', '));
+        if (profile.hobbies) setHobbies(profile.hobbies.join(', '));
+        if (profile.entrepreneurial_history) setEntrepreneurialHistory(profile.entrepreneurial_history);
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+        // Fallback to user from auth context
+        if (user) {
+          setProfileData({
+            id: user.user_id || 49,
+            first_name: user.fullname?.split(' ')[0] || 'User',
+            last_name: user.fullname?.split(' ')[1] || '',
+            full_name: user.fullname || 'User',
+            email: user.email || '',
+            bio: '',
+            circs: 122,
+          });
+        }
+      }
     };
-    setProfileData(mockProfile);
-    setConnections(0);
+    
+    fetchProfile();
   }, [user]);
 
   const calculateAge = (birthday: string) => {
@@ -100,10 +140,70 @@ export default function Profile() {
     return age.toString();
   };
 
-  const handleSave = () => {
-    // TODO: Save profile updates to API
-    console.log('Saving profile updates');
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!profileData || !user) return;
+    
+    try {
+      const updateData = {
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        bio: bio || undefined,
+        birthday: birthday || undefined,
+        personality_type: personalityType || undefined,
+        institution_attended: institution || undefined,
+        years_of_experience: experience ? parseInt(experience) : undefined,
+        locations: locations ? locations.split(',').map(l => l.trim()).filter(l => l.length > 0) : undefined,
+        skillsets: skills ? skills.split(',').map(s => s.trim()).filter(s => s.length > 0) : undefined,
+        clubs: clubs ? clubs.split(',').map(c => c.trim()).filter(c => c.length > 0) : undefined,
+        hobbies: hobbies ? hobbies.split(',').map(h => h.trim()).filter(h => h.length > 0) : undefined,
+        entrepreneurial_history: entrepreneurialHistory || undefined,
+      };
+      
+      const updatedProfile = await userService.updateUserProfile(user.user_id, updateData);
+      
+      setProfileData({
+        ...profileData,
+        bio: updatedProfile.bio,
+        birthday: updatedProfile.birthday,
+        personality_type: updatedProfile.personality_type,
+        institution_attended: updatedProfile.institution_attended,
+        years_of_experience: updatedProfile.years_of_experience,
+        locations: updatedProfile.locations,
+        skillsets: updatedProfile.skillsets,
+        clubs: updatedProfile.clubs,
+        hobbies: updatedProfile.hobbies,
+        entrepreneurial_history: updatedProfile.entrepreneurial_history,
+      });
+      
+      setIsEditing(false);
+      console.log('Profile updated successfully');
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+      alert('Failed to save profile. Please try again.');
+    }
+  };
+
+  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user || !profileData) return;
+
+    try {
+      setIsUploadingImage(true);
+      const result = await userService.uploadProfileImage(user.user_id, file);
+      
+      const imageUrl = userService.getProfileImageUrl(result.profile_image);
+      setProfileData({
+        ...profileData,
+        profile_image: imageUrl,
+      });
+      
+      console.log('Profile image updated successfully');
+    } catch (err) {
+      console.error('Failed to upload profile image:', err);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   return (
@@ -183,11 +283,26 @@ export default function Profile() {
               </div>
               
               {/* Camera icon overlay */}
-              <button className="absolute bottom-0 right-0 w-10 h-10 rounded-full flex items-center justify-center shadow-xl hover:scale-105 transition-transform z-20" style={{ backgroundColor: COLORS.primary }}>
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <button 
+                onClick={() => {
+                  document.getElementById('profile-image-input')?.click();
+                }}
+                disabled={isUploadingImage}
+                className="absolute bottom-0 right-0 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-20 disabled:opacity-50"
+                style={{ backgroundColor: COLORS.primary }}
+              >
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20" style={{ color: '#ffffff' }}>
                   <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                 </svg>
               </button>
+              <input
+                id="profile-image-input"
+                type="file"
+                accept="image/*"
+                onChange={handleProfileImageUpload}
+                disabled={isUploadingImage}
+                className="hidden"
+              />
             </div>
 
             {/* Name and Username */}

@@ -2,26 +2,30 @@ import { useState } from 'react';
 import { ForumPost as ForumPostType } from '../../types/forum';
 import { timeAgo } from '../../utils/formatters';
 import { COLORS } from '../../utils/colors';
+import { forumService } from '../../services/forumService';
+import CommentSection from './CommentSection';
 
 interface ForumPostProps {
   post: ForumPostType;
   isCurrentUser?: boolean;
-  onComment?: () => void;
-  onLike?: () => void;
   onDelete?: () => void;
   onProfileClick?: () => void;
+  onPostUpdate?: () => void;
 }
 
 export default function ForumPost({
   post,
   isCurrentUser = false,
-  onComment,
-  onLike,
   onDelete,
   onProfileClick,
+  onPostUpdate,
 }: ForumPostProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.like_count);
+  const [likedByUser, setLikedByUser] = useState(post.liked_by_user);
+  const [isLiking, setIsLiking] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.comment_count || 0);
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,6 +36,31 @@ export default function ForumPost({
     setShowDeleteConfirm(false);
     setShowMenu(false);
     onDelete?.();
+  };
+
+  const handleLike = async () => {
+    try {
+      setIsLiking(true);
+
+      if (likedByUser) {
+        // Unlike
+        await forumService.unlikePost(post.id);
+        setLikedByUser(false);
+        setLikeCount(count => count - 1);
+      } else {
+        // Like
+        await forumService.likePost(post.id);
+        setLikedByUser(true);
+        setLikeCount(count => count + 1);
+      }
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+      // Revert optimistic update
+      setLikedByUser(!likedByUser);
+      setLikeCount(likedByUser ? likeCount + 1 : likeCount - 1);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   return (
@@ -52,7 +81,7 @@ export default function ForumPost({
                 />
               ) : (
                 <div 
-                  className="w-full h-full flex items-center justify-center text-white font-bold"
+                  className="w-full h-full flex items-center justify-center text-white font-bold text-sm"
                   style={{ backgroundColor: COLORS.primary }}
                 >
                   {post.user.charAt(0).toUpperCase()}
@@ -172,49 +201,58 @@ export default function ForumPost({
             )}
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-8 mt-2">
+            <div className="flex items-center gap-6 mt-3">
               {/* Comment Button */}
               <button
-                onClick={onComment}
-                className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors group"
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                   />
                 </svg>
-                <span className="text-[13px]">{post.comment_count || 0}</span>
+                <span className="text-[13px] text-gray-500">{commentCount}</span>
               </button>
 
               {/* Like Button */}
               <button
-                onClick={onLike}
-                className={`flex items-center gap-1 transition-colors group ${
-                  post.liked_by_user ? 'text-red-600' : 'text-gray-500 hover:text-red-600'
+                onClick={handleLike}
+                disabled={isLiking}
+                className={`flex items-center gap-2 transition-colors disabled:opacity-50 ${
+                  likedByUser ? 'text-red-600' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <svg
-                  className="w-4 h-4"
-                  fill={post.liked_by_user ? 'currentColor' : 'none'}
+                  className="w-5 h-5"
+                  fill={likedByUser ? 'currentColor' : 'none'}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
-                <span className="text-[13px]">{post.like_count}</span>
+                <span className="text-[13px] text-gray-500">{likeCount}</span>
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Comment Section */}
+      <CommentSection 
+        postId={post.id}
+        onCommentAdded={() => {
+          setCommentCount(count => count + 1);
+          onPostUpdate?.();
+        }}
+      />
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
