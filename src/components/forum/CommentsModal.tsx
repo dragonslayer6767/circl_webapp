@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import { COLORS } from '../../utils/colors';
 import { timeAgo } from '../../utils/formatters';
+import { forumService, Comment as ForumComment } from '../../services/forumService';
 
-export interface Comment {
-  id: number;
-  user: string;
-  text: string;
-  created_at: string;
-  like_count: number;
-  liked_by_user: boolean;
+export interface Comment extends ForumComment {
   profile_image?: string;
 }
 
@@ -33,28 +28,7 @@ export default function CommentsModal({
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Mock data for demonstration
-  const mockComments: Comment[] = [
-    {
-      id: 1,
-      user: 'John Doe',
-      text: 'Great post! Really insightful.',
-      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      like_count: 3,
-      liked_by_user: false,
-      profile_image: 'https://i.pravatar.cc/150?img=10',
-    },
-    {
-      id: 2,
-      user: 'Jane Smith',
-      text: 'Thanks for sharing this!',
-      created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      like_count: 1,
-      liked_by_user: true,
-      profile_image: 'https://i.pravatar.cc/150?img=11',
-    },
-  ];
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -62,48 +36,76 @@ export default function CommentsModal({
     }
   }, [isOpen, postId]);
 
-  const fetchComments = () => {
-    setIsLoading(true);
-    // Simulate API delay
-    setTimeout(() => {
-      setComments(mockComments);
+  const fetchComments = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await forumService.getComments(postId);
+      setComments(response.results || []);
+    } catch (err) {
+      console.error('Failed to fetch comments:', err);
+      setError('Failed to load comments. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
-  const submitComment = () => {
+  const submitComment = async () => {
     if (!newComment.trim()) return;
 
-    setIsSubmitting(true);
-    // Simulate API delay
-    setTimeout(() => {
-      const newCommentObj: Comment = {
-        id: comments.length + 1,
-        user: 'You',
-        text: newComment,
-        created_at: new Date().toISOString(),
-        like_count: 0,
-        liked_by_user: false,
-      };
-      setComments([...comments, newCommentObj]);
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      const comment = await forumService.createComment(postId, {
+        content: newComment,
+      });
+      
+      setComments([...comments, comment]);
       setNewComment('');
+    } catch (err) {
+      console.error('Failed to create comment:', err);
+      setError('Failed to post comment. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 300);
+    }
   };
 
-  const toggleCommentLike = (comment: Comment) => {
-    // Optimistic update
-    setComments(prev =>
-      prev.map(c =>
-        c.id === comment.id
-          ? {
-              ...c,
-              liked_by_user: !c.liked_by_user,
-              like_count: c.liked_by_user ? c.like_count - 1 : c.like_count + 1,
-            }
-          : c
-      )
-    );
+  const toggleCommentLike = async (comment: Comment) => {
+    try {
+      // Optimistic update
+      setComments(prev =>
+        prev.map(c =>
+          c.id === comment.id
+            ? {
+                ...c,
+                liked_by_user: !c.liked_by_user,
+                like_count: c.liked_by_user ? c.like_count - 1 : c.like_count + 1,
+              }
+            : c
+        )
+      );
+
+      // API call
+      if (comment.liked_by_user) {
+        await forumService.unlikeComment(postId, comment.id);
+      } else {
+        await forumService.likeComment(postId, comment.id);
+      }
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+      // Revert on error
+      setComments(prev =>
+        prev.map(c =>
+          c.id === comment.id
+            ? {
+                ...c,
+                liked_by_user: !c.liked_by_user,
+                like_count: c.liked_by_user ? c.like_count - 1 : c.like_count + 1,
+              }
+            : c
+        )
+      );
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -160,6 +162,11 @@ export default function CommentsModal({
 
           {/* Comments List */}
           <div className="flex-1 overflow-y-auto">
+            {error && (
+              <div className="px-4 py-3 bg-red-50 border-b border-red-200">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: COLORS.primary }} />
@@ -181,7 +188,7 @@ export default function CommentsModal({
               <div className="divide-y divide-gray-200">
                 {comments.map((comment) => (
                   <div key={comment.id} className="px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <div className="flex gap-3">
+                  <div className="flex gap-3">
                       {/* Profile Image */}
                       <div className="flex-shrink-0">
                         {comment.profile_image ? (
@@ -207,7 +214,7 @@ export default function CommentsModal({
                           <span className="text-gray-500 text-xs">{timeAgo(comment.created_at)}</span>
                         </div>
                         <p className="text-gray-900 text-sm mb-2 whitespace-pre-wrap break-words">
-                          {comment.text}
+                          {comment.content}
                         </p>
 
                         {/* Like Button */}

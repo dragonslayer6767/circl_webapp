@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTutorial } from '../context/TutorialContext';
 import ForumPost from '../components/forum/ForumPost';
-import CommentsModal from '../components/forum/CommentsModal';
 import NotificationTester from '../components/common/NotificationTester';
 import { ForumPost as ForumPostType } from '../types/forum';
 import { COLORS } from '../utils/colors';
+import { forumService } from '../services/forumService';
 
 // Dummy data matching the screenshot
 const DUMMY_POSTS: ForumPostType[] = [
@@ -105,17 +105,37 @@ const PRIVACY_OPTIONS = [
 ];
 
 export default function Forum() {
-  const [posts, setPosts] = useState<ForumPostType[]>(DUMMY_POSTS);
+  const [posts, setPosts] = useState<ForumPostType[]>([]);
   const [selectedTab, setSelectedTab] = useState<'for_you' | 'following'>('for_you');
-  const [commentsModalOpen, setCommentsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<ForumPostType | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPrivacy, setSelectedPrivacy] = useState<string>('public');
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { checkAndTriggerTutorial } = useTutorial();
+
+  // Fetch posts from API
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setIsLoading(true);
+        // Get posts based on selected tab
+        const privacy = selectedTab === 'for_you' ? 'public' : 'my_network';
+        const data = await forumService.getPosts(undefined, privacy);
+        setPosts(data || []);
+      } catch (err) {
+        console.error('Failed to fetch posts:', err);
+        // Fallback to dummy data if API fails
+        setPosts(DUMMY_POSTS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [selectedTab]);
 
   // Check if should trigger tutorial after onboarding
   useEffect(() => {
@@ -130,38 +150,33 @@ export default function Forum() {
     }
   }, [checkAndTriggerTutorial]);
 
-  const handleLike = (post: ForumPostType) => {
-    // Optimistic local update only - no API calls
-    setPosts((prevPosts) =>
-      prevPosts.map((p) =>
-        p.id === post.id
-          ? {
-              ...p,
-              liked_by_user: !p.liked_by_user,
-              like_count: p.liked_by_user ? p.like_count - 1 : p.like_count + 1,
-            }
-          : p
-      )
-    );
+  const handleRefreshPosts = async () => {
+    try {
+      const privacy = selectedTab === 'for_you' ? 'public' : 'my_network';
+      const data = await forumService.getPosts(undefined, privacy);
+      setPosts(data || []);
+    } catch (err) {
+      console.error('Failed to refresh posts:', err);
+    }
   };
 
-  const handleComment = (post: ForumPostType) => {
-    setSelectedPost(post);
-    setCommentsModalOpen(true);
-  };
+  const handleDelete = async (postId: number) => {
+    try {
+      // Optimistic delete
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
 
-  const handleCloseComments = () => {
-    setCommentsModalOpen(false);
-    setSelectedPost(null);
-  };
-
-  const handleDelete = (postId: number) => {
-    // Local delete only - no API calls
-    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+      // Call API
+      await forumService.deletePost(postId);
+    } catch (err) {
+      console.error('Failed to delete post:', err);
+      // Revert on error - re-fetch posts
+      const data = await forumService.getPosts();
+      setPosts(data || []);
+    }
   };
 
   const handleProfileClick = (_userId: number) => {
-    addNotification('Profile page coming soon!', 'info');
+    console.log('Profile click - feature coming soon');
   };
 
   const handleCategorySelect = (category: string) => {
@@ -174,28 +189,29 @@ export default function Forum() {
     setShowPrivacyModal(false);
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
 
-    const newPost: ForumPostType = {
-      id: posts.length + 1,
-      user: user?.fullname || 'Anonymous User',
-      user_id: user?.user_id || 999,
-      profileImage: user?.profile_image || `https://i.pravatar.cc/150?img=${posts.length + 1}`,
-      content: newPostContent,
-      category: selectedCategory || 'Public',
-      privacy: selectedPrivacy as 'public' | 'private' | 'connections',
-      created_at: new Date().toISOString(),
-      comment_count: 0,
-      like_count: 0,
-      liked_by_user: false,
-    };
+    try {
+      setIsLoading(true);
+      // Call API to create post
+      const newPost = await forumService.createPost({
+        content: newPostContent,
+        category: selectedCategory || 'Public',
+        privacy: selectedPrivacy as 'public' | 'private' | 'connections',
+      });
 
-    setPosts([newPost, ...posts]);
-    setNewPostContent('');
-    setSelectedCategory('');
-    setSelectedPrivacy('public');
-    addNotification('Post created successfully!', 'success');
+      // Add the new post to the beginning of the list
+      setPosts([newPost, ...posts]);
+      setNewPostContent('');
+      setSelectedCategory('');
+      setSelectedPrivacy('public');
+      console.log('Post created successfully!');
+    } catch (err) {
+      console.error('Failed to create post:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -414,7 +430,12 @@ export default function Forum() {
 
       {/* Posts Feed */}
       <div>
-        {DUMMY_POSTS.length === 0 ? (
+        {isLoading && posts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }} />
+            <p className="mt-4 text-gray-600">Loading posts...</p>
+          </div>
+        ) : posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
             <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -428,31 +449,18 @@ export default function Forum() {
             <p className="text-sm">Be the first to share something!</p>
           </div>
         ) : (
-          DUMMY_POSTS.map((post) => (
+          posts.map((post) => (
             <ForumPost
               key={post.id}
               post={post}
               isCurrentUser={post.user_id === user?.user_id}
-              onComment={() => handleComment(post)}
-              onLike={() => handleLike(post)}
               onDelete={() => handleDelete(post.id)}
               onProfileClick={() => handleProfileClick(post.user_id)}
+              onPostUpdate={handleRefreshPosts}
             />
           ))
         )}
       </div>
-
-      {/* Comments Modal */}
-      {selectedPost && (
-        <CommentsModal
-          postId={selectedPost.id}
-          isOpen={commentsModalOpen}
-          onClose={handleCloseComments}
-          postAuthor={selectedPost.user}
-          postContent={selectedPost.content}
-          postTimestamp={selectedPost.created_at}
-        />
-      )}
 
       {/* Notification Tester */}
       <NotificationTester />
