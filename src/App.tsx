@@ -1,20 +1,13 @@
-import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
-import { SubscriptionProvider } from './context/SubscriptionContext';
-import { TutorialProvider } from './context/TutorialContext';
 import { AuthProvider } from './context/AuthContext';
 import { SidebarProvider } from './context/SidebarContext';
 import { CircleViewProvider } from './context/CircleViewContext';
-import { OnboardingProvider } from './context/OnboardingContext';
+import { TutorialProvider } from './context/TutorialContext';
+import { SubscriptionProvider } from './context/SubscriptionContext';
 import { useAuth } from './hooks/useAuth';
-import { AppToaster } from './utils/toast';
-import { initializeSampleTasks } from './utils/taskHelpers';
-import LoadingScreen from './components/common/LoadingScreen';
-import SubscriptionPaywall from './components/common/SubscriptionPaywall';
-import TutorialOverlay from './components/common/TutorialOverlay';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
 import Forum from './pages/Forum';
@@ -38,12 +31,6 @@ import BusinessProfile from './pages/BusinessProfile';
 import Circles from './pages/Circles';
 import CircleView from './pages/circles/CircleView';
 import ChannelChatView from './pages/circles/ChannelChatView';
-import TermsPage from './pages/onboarding/TermsPage';
-import SignupFormPage from './pages/onboarding/SignupFormPage';
-import ProfilePicturePage from './pages/onboarding/ProfilePicturePage';
-import PersonalInfoPage from './pages/onboarding/PersonalInfoPage';
-import NotificationsPage from './pages/onboarding/NotificationsPage';
-import CompletionPage from './pages/onboarding/CompletionPage';
 import './App.css';
 
 // Create a client for React Query
@@ -78,47 +65,19 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 function App() {
-  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
-
-  const handleLoadingComplete = () => {
-    setShowLoadingScreen(false);
-  };
-
-  // Initialize sample tasks on first load
-  useEffect(() => {
-    initializeSampleTasks();
-  }, []);
-
-  // Show loading screen on every load/reload
-  if (showLoadingScreen) {
-    return <LoadingScreen onComplete={handleLoadingComplete} duration={3000} />;
-  }
-
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <SubscriptionProvider>
-              <TutorialProvider>
-                <NotificationProvider>
-                  <SidebarProvider>
+            <NotificationProvider>
+              <SidebarProvider>
+                <SubscriptionProvider>
+                  <TutorialProvider>
                     <CircleViewProvider>
-                      <OnboardingProvider>
-                        <AppToaster />
-                        <SubscriptionPaywall />
-                        <TutorialOverlay />
                       <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
-                
-                {/* Onboarding Routes */}
-                <Route path="/onboarding/terms" element={<TermsPage />} />
-                <Route path="/onboarding/signup" element={<SignupFormPage />} />
-                <Route path="/onboarding/profile-picture" element={<ProfilePicturePage />} />
-                <Route path="/onboarding/personal-info" element={<PersonalInfoPage />} />
-                <Route path="/onboarding/notifications" element={<NotificationsPage />} />
-                <Route path="/onboarding/complete" element={<CompletionPage />} />
                 
                 {/* TEMPORARY: Forum, Network, and Messages are public for development */}
                 <Route
@@ -321,17 +280,16 @@ function App() {
                 
                 {/* 404 Route */}
                 <Route path="*" element={<Navigate to="/forum" replace />} />
-                    </Routes>
-                    </OnboardingProvider>
-                  </CircleViewProvider>
-                </SidebarProvider>
-              </NotificationProvider>
+                </Routes>
+              </CircleViewProvider>
             </TutorialProvider>
-            </SubscriptionProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </ErrorBoundary>
+          </SubscriptionProvider>
+        </SidebarProvider>
+      </NotificationProvider>
+    </AuthProvider>
+  </BrowserRouter>
+</QueryClientProvider>
+</ErrorBoundary>
   );
 }
 

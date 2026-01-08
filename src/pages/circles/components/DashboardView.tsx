@@ -13,8 +13,6 @@ import KanbanBoard from './KanbanBoard.tsx';
 import ProjectGrid from './ProjectGrid.tsx';
 import CreateTaskModal, { TaskFormData } from './CreateTaskModal';
 import TaskDetailModal from './TaskDetailModal';
-import KPIManager from './KPIManager';
-import CRMManager from './CRMManager';
 
 interface DashboardViewProps {
   circleId: number;
@@ -47,7 +45,6 @@ export default function DashboardView({
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
   const [showTaskDetail, setShowTaskDetail] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<string>('all');
 
   useEffect(() => {
     loadMockData();
@@ -95,7 +92,6 @@ export default function DashboardView({
             startDate: new Date('2025-12-15'),
             endDate: new Date('2025-12-28'),
             priority: TaskPriority.High,
-            team: 'Marketing',
             createdAt: new Date('2025-12-15')
           },
           {
@@ -108,7 +104,6 @@ export default function DashboardView({
             startDate: new Date('2025-12-20'),
             endDate: new Date('2026-01-10'),
             priority: TaskPriority.Medium,
-            team: 'Marketing',
             createdAt: new Date('2025-12-15')
           }
         ]
@@ -133,7 +128,6 @@ export default function DashboardView({
             startDate: new Date('2025-12-01'),
             endDate: new Date('2025-12-10'),
             priority: TaskPriority.High,
-            team: 'Design',
             createdAt: new Date('2025-12-01'),
             completedAt: new Date('2025-12-09')
           }
@@ -152,7 +146,6 @@ export default function DashboardView({
         startDate: new Date('2025-12-20'),
         endDate: new Date('2025-12-27'),
         priority: TaskPriority.Low,
-        team: 'Operations',
         createdAt: new Date('2025-12-20')
       },
       {
@@ -164,7 +157,6 @@ export default function DashboardView({
         startDate: new Date('2025-12-22'),
         endDate: new Date('2025-12-26'),
         priority: TaskPriority.Critical,
-        team: 'Marketing',
         createdAt: new Date('2025-12-22')
       }
     ];
@@ -234,22 +226,6 @@ export default function DashboardView({
     ...standaloneTasks,
     ...projects.flatMap(p => p.tasks)
   ];
-
-  // Filter tasks by selected team
-  const filteredTasks = selectedTeam === 'all' 
-    ? allTasks 
-    : allTasks.filter(task => task.team === selectedTeam);
-
-  // Get filtered projects (for project view)
-  const filteredProjects = selectedTeam === 'all'
-    ? projects
-    : projects.map(project => ({
-        ...project,
-        tasks: project.tasks.filter(task => task.team === selectedTeam)
-      })).filter(project => project.tasks.length > 0);
-
-  // Get unique teams from all tasks
-  const teams = Array.from(new Set(allTasks.map(task => task.team).filter(Boolean))) as string[];
 
   const getRankColor = (rank: number) => {
     switch (rank) {
@@ -371,26 +347,11 @@ export default function DashboardView({
         </div>
       )}
 
-      {/* KPI Manager - Above Task Manager */}
-      <KPIManager circleId={circleId} isModerator={isModerator} />
-
       {/* Task Manager Section */}
       <div className="bg-white rounded-xl p-4 mb-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-gray-900">Task Manager</h3>
           <div className="flex items-center space-x-2">
-            {/* Team Filter */}
-            <select
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-              className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All Teams</option>
-              {teams.map(team => (
-                <option key={team} value={team}>{team}</option>
-              ))}
-            </select>
-
             {/* View Mode Selector */}
             <div className="flex bg-gray-100 rounded-lg p-0.5">
               <button
@@ -426,17 +387,14 @@ export default function DashboardView({
         </div>
 
         {viewMode === 'kanban' ? (
-          <KanbanBoard tasks={filteredTasks} projects={filteredProjects} onTaskClick={handleTaskClick} />
+          <KanbanBoard tasks={allTasks} projects={projects} onTaskClick={handleTaskClick} />
         ) : (
-          <ProjectGrid projects={filteredProjects} />
+          <ProjectGrid projects={projects} />
         )}
       </div>
 
-      {/* CRM Manager - Below Task Manager */}
-      <CRMManager circleId={circleId} isModerator={isModerator} />
-
       {/* Leaderboard */}
-      <div className="bg-white rounded-xl p-4 shadow-sm mt-5">
+      <div className="bg-white rounded-xl p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-gray-900">Circle Leaderboard</h3>
           <div className="flex bg-gray-100 rounded-lg p-0.5">
