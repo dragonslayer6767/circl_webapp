@@ -40,10 +40,10 @@ export default function Circles() {
       setMyCircles([
         {
           id: 1,
-          name: 'Tech Leaders Council',
+          name: 'Member Company',
           industry: 'Technology',
           pricing: 'Premium',
-          description: 'An exclusive circle for technology leaders to discuss innovation, strategy, and industry trends. Share insights on digital transformation and emerging technologies.',
+          description: 'A startup incubator helping early-stage companies grow through mentorship, resources, and community support. Connect with fellow founders and access expert guidance.',
           join_type: 'Join Now',
           member_count: 42,
           is_private: false,

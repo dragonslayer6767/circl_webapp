@@ -11,6 +11,7 @@ interface CreateCircleModalProps {
 
 const allChannelOptions = ['#Welcome', '#Chats', '#Moderators', '#News', '#Announcements', '#General'];
 const joinTypeOptions: JoinType[] = ['Join Now', 'Apply Now', 'Request to Join'];
+const categoryOptions = ['Student Organization', 'Business Operations', 'Incubator/Accelerator', 'Innovation Hub', 'Community', 'Other'];
 
 export default function CreateCircleModal({ isOpen, onClose, onCreateCircle, userId }: CreateCircleModalProps) {
   const [circleName, setCircleName] = useState('');
@@ -30,7 +31,7 @@ export default function CreateCircleModal({ isOpen, onClose, onCreateCircle, use
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!circleName.trim() || !circleIndustry.trim() || !circleDescription.trim()) {
+    if (!circleName.trim() || !circleIndustry.trim() || !circleDescription.trim() || !circleCategory.trim()) {
       alert('Please fill in all required fields');
       return;
     }
@@ -145,18 +146,24 @@ export default function CreateCircleModal({ isOpen, onClose, onCreateCircle, use
               />
             </div>
 
-            {/* Category (Optional) */}
+            {/* Category */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Category <span className="text-gray-400 text-xs">(Optional)</span>
+                Category <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <select
                 value={circleCategory}
                 onChange={(e) => setCircleCategory(e.target.value)}
-                placeholder="e.g., Student Org, Professional Network"
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-              />
+                required
+              >
+                <option value="">Select a category</option>
+                {categoryOptions.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Description */}

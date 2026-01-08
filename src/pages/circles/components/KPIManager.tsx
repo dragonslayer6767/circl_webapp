@@ -30,21 +30,21 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
     },
     {
       id: 'kpi-2',
-      name: 'New Members',
-      value: 24,
-      target: 30,
-      unit: '',
+      name: 'Capital Raised',
+      value: 245000,
+      target: 500000,
+      unit: '$',
       trend: 'up',
-      percentageChange: 12.3
+      percentageChange: 18.5
     },
     {
       id: 'kpi-3',
-      name: 'Event Attendance',
-      value: 85,
-      target: 90,
-      unit: '%',
-      trend: 'down',
-      percentageChange: -3.2
+      name: 'Customer Conversations',
+      value: 47,
+      target: 60,
+      unit: '',
+      trend: 'up',
+      percentageChange: 22.5
     },
     {
       id: 'kpi-4',
@@ -63,6 +63,8 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
   );
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedKpi, setSelectedKpi] = useState<KPI | null>(null);
 
   const toggleKpiView = (kpiId: string) => {
     setKpiViewModes(prev => ({
@@ -80,6 +82,37 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
     };
     setKpis(prev => [...prev, newKPI]);
     setKpiViewModes(prev => ({ ...prev, [newKPI.id]: 'standard' }));
+  };
+
+  const handleEditKPI = (kpi: KPI) => {
+    setSelectedKpi(kpi);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateKPI = (updatedValue: number) => {
+    if (!selectedKpi) return;
+    
+    setKpis(prev => prev.map(kpi => {
+      if (kpi.id === selectedKpi.id) {
+        // Calculate new trend and percentage change
+        const oldValue = kpi.value;
+        const percentageChange = oldValue > 0 ? ((updatedValue - oldValue) / oldValue) * 100 : 0;
+        const trend: 'up' | 'down' | 'neutral' = 
+          percentageChange > 0 ? 'up' : 
+          percentageChange < 0 ? 'down' : 'neutral';
+        
+        return {
+          ...kpi,
+          value: updatedValue,
+          trend,
+          percentageChange: Math.abs(percentageChange)
+        };
+      }
+      return kpi;
+    }));
+    
+    setShowEditModal(false);
+    setSelectedKpi(null);
   };
 
   const getTrendIcon = (trend: 'up' | 'down' | 'neutral') => {
@@ -179,13 +212,20 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
           const isChartView = kpiViewModes[kpi.id] === 'chart';
           
           return (
-            <div key={kpi.id} className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
+            <div 
+              key={kpi.id} 
+              className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors cursor-pointer"
+              onClick={() => handleEditKPI(kpi)}
+            >
               <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-semibold text-gray-900">{kpi.name}</h4>
                 <div className="flex items-center gap-2">
                   {/* View Toggle Button */}
                   <button
-                    onClick={() => toggleKpiView(kpi.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleKpiView(kpi.id);
+                    }}
                     className="text-xs font-medium text-blue-600 hover:text-blue-700 underline transition-colors"
                     title={isChartView ? 'Switch to standard view' : 'Switch to chart view'}
                   >
@@ -240,6 +280,106 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateKPI}
       />
+
+      {/* Edit KPI Modal */}
+      {showEditModal && selectedKpi && (
+        <EditKPIModal
+          kpi={selectedKpi}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedKpi(null);
+          }}
+          onUpdate={handleUpdateKPI}
+        />
+      )}
+    </div>
+  );
+}
+
+// Edit KPI Modal Component
+interface EditKPIModalProps {
+  kpi: KPI;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: (value: number) => void;
+}
+
+function EditKPIModal({ kpi, isOpen, onClose, onUpdate }: EditKPIModalProps) {
+  const [value, setValue] = useState(kpi.value.toString());
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue >= 0) {
+      onUpdate(numValue);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900">Edit KPI Value</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {kpi.name}
+              </label>
+              <div className="text-xs text-gray-500 mb-2">
+                Current: {kpi.unit === '$' ? kpi.unit : ''}{kpi.value.toLocaleString()}{kpi.unit !== '$' ? kpi.unit : ''} / Target: {kpi.unit === '$' ? kpi.unit : ''}{kpi.target.toLocaleString()}{kpi.unit !== '$' ? kpi.unit : ''}
+              </div>
+              <div className="relative">
+                {kpi.unit === '$' && (
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    $
+                  </span>
+                )}
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  className={`w-full ${kpi.unit === '$' ? 'pl-7' : 'pl-3'} pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  placeholder="Enter new value"
+                  step="any"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 text-white rounded-lg hover:opacity-90 transition-colors font-medium"
+                style={{ backgroundColor: COLORS.primary }}
+              >
+                Update
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

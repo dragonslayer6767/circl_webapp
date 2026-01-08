@@ -8,8 +8,6 @@ import DashboardView from './components/DashboardView';
 import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
 import CreateThreadModal from './components/CreateThreadModal';
 import ResizablePanels from '../../components/circles/ResizablePanels';
-import AnnouncementCard from './components/AnnouncementCard';
-import ThreadDetailModal from './components/ThreadDetailModal';
 
 interface Announcement {
   id: number;
@@ -53,7 +51,6 @@ export default function CircleView() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCircleSwitcher, setShowCircleSwitcher] = useState(false);
   const [showCreateThread, setShowCreateThread] = useState(false);
-  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
 
   useEffect(() => {
     if (circleId) {
@@ -62,15 +59,15 @@ export default function CircleView() {
       const currentUserId = 1; // TODO: Get from auth context
       const id = parseInt(circleId);
 
-      // Circle 1: Tech Leaders Council (User is moderator)
+      // Circle 1: Member Company (User is moderator)
       // Circle 2: Growth Hackers (User is not moderator)
       const mockCircles: { [key: number]: Circle } = {
         1: {
           id: 1,
-          name: 'Tech Leaders Council',
+          name: 'Member Company',
           industry: 'Technology',
           pricing: 'Premium',
-          description: 'An exclusive circle for technology leaders to discuss innovation, strategy, and industry trends.',
+          description: 'A startup incubator helping early-stage companies grow through mentorship, resources, and community support.',
           join_type: 'Join Now',
           member_count: 42,
           is_private: false,
@@ -113,8 +110,8 @@ export default function CircleView() {
       const mockAnnouncements: Announcement[] = id === 1 ? [
         {
           id: 1,
-          title: 'Welcome to Tech Leaders Council!',
-          content: 'We\'re excited to have you here. Share your insights and connect with fellow tech leaders.',
+          title: 'Monthly Mentor Meeting in 3 Days',
+          content: 'Don\'t forget to sign up for our monthly mentor meeting this Thursday at 2pm. Connect with experienced founders and get feedback on your progress.',
           created_by: 'Admin',
           created_at: '2 days ago'
         }
@@ -132,18 +129,34 @@ export default function CircleView() {
         {
           id: 1,
           author: 'Sarah Johnson',
-          content: 'What are your thoughts on the latest AI developments? How is everyone integrating AI into their tech stack?',
+          content: 'Just closed our seed round! $750K from two local angels. Happy to share pitch deck lessons learned.',
           created_at: '3 hours ago',
-          likes: 12,
-          comments: 5
+          likes: 24,
+          comments: 12
         },
         {
           id: 2,
           author: 'Michael Chen',
-          content: 'Looking for recommendations on cloud infrastructure providers. What has been your experience?',
+          content: 'Our MVP is live! Got 50 beta users in the first week. Who wants to do a user testing swap?',
           created_at: '5 hours ago',
-          likes: 8,
-          comments: 3
+          likes: 18,
+          comments: 8
+        },
+        {
+          id: 3,
+          author: 'Jessica Martinez',
+          content: 'Looking for a technical co-founder with React/Node experience. Anyone interested or know someone?',
+          created_at: '1 day ago',
+          likes: 15,
+          comments: 7
+        },
+        {
+          id: 4,
+          author: 'David Park',
+          content: 'Customer discovery update: 25 interviews done. The problem is bigger than we thought. Pivot time?',
+          created_at: '2 days ago',
+          likes: 11,
+          comments: 9
         }
       ] : [
         {
@@ -172,13 +185,43 @@ export default function CircleView() {
         },
         {
           id: 2,
-          name: 'Innovation',
+          name: 'Fundraising',
           category: 'General'
         },
         {
           id: 3,
-          name: 'Strategy',
+          name: 'Product-Development',
           category: 'General'
+        },
+        {
+          id: 4,
+          name: 'Customer-Discovery',
+          category: 'General'
+        },
+        {
+          id: 5,
+          name: 'Co-Founder-Search',
+          category: 'General'
+        },
+        {
+          id: 6,
+          name: 'Resources',
+          category: 'General'
+        },
+        {
+          id: 7,
+          name: 'Mentor-Office-Hours',
+          category: 'Mentor'
+        },
+        {
+          id: 8,
+          name: 'Ask-A-Mentor',
+          category: 'Mentor'
+        },
+        {
+          id: 9,
+          name: 'Success-Stories',
+          category: 'Mentor'
         }
       ] : [
         {
@@ -278,22 +321,23 @@ export default function CircleView() {
             <h2 className="text-base font-bold text-gray-900">Announcements</h2>
           </div>
 
-          <div className="space-y-3">
-            {announcements.map((announcement) => (
-              <AnnouncementCard
-                key={announcement.id}
-                id={announcement.id}
-                title={announcement.title}
-                content={announcement.content}
-                created_by={announcement.created_by}
-                created_at={announcement.created_at}
-                onDelete={(announcementId: number) => {
-                  setAnnouncements(announcements.filter(a => a.id !== announcementId));
-                }}
-                canDelete={circle?.is_moderator || false}
-              />
-            ))}
-          </div>
+          {announcements.map((announcement) => (
+            <div 
+              key={announcement.id}
+              className="rounded-2xl px-4 py-3 cursor-pointer hover:opacity-90 transition-opacity mb-3 w-full"
+              style={{ backgroundColor: COLORS.primary }}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-semibold text-sm truncate">{announcement.title}</h3>
+                  <p className="text-white text-xs mt-1 opacity-90 truncate">By {announcement.created_by} · {announcement.created_at}</p>
+                </div>
+                <svg className="w-4 h-4 text-white flex-shrink-0 ml-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Circle Threads Section */}
@@ -321,7 +365,6 @@ export default function CircleView() {
               threads.map((thread) => (
                 <div 
                   key={thread.id}
-                  onClick={() => setSelectedThread(thread)}
                   className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full"
                 >
                   <div className="flex items-center space-x-2.5 mb-2">
@@ -382,30 +425,68 @@ export default function CircleView() {
             </div>
           </div>
 
-          <div className="space-y-2 w-full">
-            {channels.map((channel) => (
-              <button
-                key={channel.id}
-                onClick={() => navigate(`/circles/${circleId}/channel/${channel.id}`)}
-                className="w-full flex items-center justify-between bg-white rounded-xl px-3 py-2.5 hover:bg-gray-50 transition-colors group"
-              >
-                <div className="flex items-center space-x-2.5 flex-1 min-w-0">
-                  <div 
-                    className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0"
-                    style={{ backgroundColor: `${COLORS.primary}`, color: 'white' }}
+          <div className="space-y-4 w-full">
+            {/* General Category */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">General</h3>
+              <div className="space-y-2">
+                {channels.filter(channel => channel.category === 'General').map((channel) => (
+                  <button
+                    key={channel.id}
+                    onClick={() => navigate(`/circles/${circleId}/channel/${channel.id}`)}
+                    className="w-full flex items-center justify-between bg-white rounded-xl px-3 py-2.5 hover:bg-gray-50 transition-colors group"
                   >
-                    #
-                  </div>
-                  <div className="text-left flex-1 min-w-0">
-                    <div className="font-semibold text-xs text-gray-900 truncate">#{channel.name}</div>
-                    <div className="text-xs text-gray-500 mt-0.5 truncate">Tap to join</div>
-                  </div>
+                    <div className="flex items-center space-x-2.5 flex-1 min-w-0">
+                      <div 
+                        className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0"
+                        style={{ backgroundColor: `${COLORS.primary}`, color: 'white' }}
+                      >
+                        #
+                      </div>
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="font-semibold text-xs text-gray-900 truncate">#{channel.name}</div>
+                        <div className="text-xs text-gray-500 mt-0.5 truncate">Tap to join</div>
+                      </div>
+                    </div>
+                    <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mentor Category */}
+            {channels.some(channel => channel.category === 'Mentor') && (
+              <div>
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">Mentor</h3>
+                <div className="space-y-2">
+                  {channels.filter(channel => channel.category === 'Mentor').map((channel) => (
+                    <button
+                      key={channel.id}
+                      onClick={() => navigate(`/circles/${circleId}/channel/${channel.id}`)}
+                      className="w-full flex items-center justify-between bg-white rounded-xl px-3 py-2.5 hover:bg-gray-50 transition-colors group"
+                    >
+                      <div className="flex items-center space-x-2.5 flex-1 min-w-0">
+                        <div 
+                          className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0"
+                          style={{ backgroundColor: `${COLORS.primary}`, color: 'white' }}
+                        >
+                          #
+                        </div>
+                        <div className="text-left flex-1 min-w-0">
+                          <div className="font-semibold text-xs text-gray-900 truncate">#{channel.name}</div>
+                          <div className="text-xs text-gray-500 mt-0.5 truncate">Connect with mentors</div>
+                        </div>
+                      </div>
+                      <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  ))}
                 </div>
-                <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -495,22 +576,23 @@ export default function CircleView() {
               <h2 className="text-base font-bold text-gray-900">Announcements</h2>
             </div>
 
-            <div className="space-y-3">
-              {announcements.map((announcement) => (
-                <AnnouncementCard
-                  key={announcement.id}
-                  id={announcement.id}
-                  title={announcement.title}
-                  content={announcement.content}
-                  created_by={announcement.created_by}
-                  created_at={announcement.created_at}
-                  onDelete={(announcementId: number) => {
-                    setAnnouncements(announcements.filter(a => a.id !== announcementId));
-                  }}
-                  canDelete={circle?.is_moderator || false}
-                />
-              ))}
-            </div>
+            {announcements.map((announcement) => (
+              <div 
+                key={announcement.id}
+                className="rounded-2xl px-5 py-4 cursor-pointer hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: COLORS.primary }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold text-base">{announcement.title}</h3>
+                    <p className="text-white text-sm mt-1 opacity-90">By {announcement.created_by} · {announcement.created_at}</p>
+                  </div>
+                  <svg className="w-5 h-5 text-white flex-shrink-0 ml-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Circle Threads Section */}
@@ -539,7 +621,6 @@ export default function CircleView() {
                   threads.map((thread) => (
                     <div 
                       key={thread.id}
-                      onClick={() => setSelectedThread(thread)}
                       className="flex-shrink-0 w-64 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                     >
                       <div className="flex items-center space-x-2.5 mb-3">
@@ -615,9 +696,10 @@ export default function CircleView() {
 
             {/* Channel Categories */}
             <div className="space-y-3">
+              {/* General Category */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-600 mb-2.5">General</h3>
-                {channels.map((channel) => (
+                {channels.filter(channel => channel.category === 'General').map((channel) => (
                   <button
                     key={channel.id}
                     onClick={() => navigate(`/circles/${circleId}/channel/${channel.id}`)}
@@ -641,6 +723,36 @@ export default function CircleView() {
                   </button>
                 ))}
               </div>
+
+              {/* Mentor Category */}
+              {channels.some(channel => channel.category === 'Mentor') && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600 mb-2.5">Mentor</h3>
+                  {channels.filter(channel => channel.category === 'Mentor').map((channel) => (
+                    <button
+                      key={channel.id}
+                      onClick={() => navigate(`/circles/${circleId}/channel/${channel.id}`)}
+                      className="w-full flex items-center justify-between bg-white rounded-xl px-4 py-3 mb-2 hover:bg-gray-50 transition-colors group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-sm"
+                          style={{ backgroundColor: `${COLORS.primary}`, color: 'white' }}
+                        >
+                          #
+                        </div>
+                        <div className="text-left">
+                          <div className="font-semibold text-sm text-gray-900">#{channel.name}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">Connect with mentors</div>
+                        </div>
+                      </div>
+                      <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -798,13 +910,6 @@ export default function CircleView() {
           }}
         />
       )}
-
-      {/* Thread Detail Modal */}
-      <ThreadDetailModal
-        isOpen={selectedThread !== null}
-        onClose={() => setSelectedThread(null)}
-        thread={selectedThread}
-      />
     </div>
   );
 }

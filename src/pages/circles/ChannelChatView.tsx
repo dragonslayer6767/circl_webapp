@@ -75,7 +75,7 @@ export default function ChannelChatView() {
     };
 
     const mockCircleNames: { [key: string]: string } = {
-      '1': 'Tech Leaders Council',
+      '1': 'Member Company',
       '2': 'Growth Hackers'
     };
 
