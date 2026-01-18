@@ -1,16 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { COLORS } from '../../../utils/colors';
 import CreateKPIModal, { KPIFormData } from './CreateKPIModal';
-
-interface KPI {
-  id: string;
-  name: string;
-  value: number;
-  target: number;
-  unit: string;
-  trend: 'up' | 'down' | 'neutral';
-  percentageChange: number;
-}
+import { kpiService } from '../../../services/kpiService';
+import { KPI } from '../../../types/kpi';
 
 interface KPIManagerProps {
   circleId: number;
@@ -18,51 +10,37 @@ interface KPIManagerProps {
 }
 
 export default function KPIManager({ circleId: _circleId, isModerator }: KPIManagerProps) {
-  const [kpis, setKpis] = useState<KPI[]>([
-    {
-      id: 'kpi-1',
-      name: 'Monthly Revenue',
-      value: 12500,
-      target: 15000,
-      unit: '$',
-      trend: 'up',
-      percentageChange: 8.5
-    },
-    {
-      id: 'kpi-2',
-      name: 'New Members',
-      value: 24,
-      target: 30,
-      unit: '',
-      trend: 'up',
-      percentageChange: 12.3
-    },
-    {
-      id: 'kpi-3',
-      name: 'Event Attendance',
-      value: 85,
-      target: 90,
-      unit: '%',
-      trend: 'down',
-      percentageChange: -3.2
-    },
-    {
-      id: 'kpi-4',
-      name: 'Tasks Completed',
-      value: 42,
-      target: 50,
-      unit: '',
-      trend: 'up',
-      percentageChange: 15.7
-    }
-  ]);
-
+  const circleId = _circleId || 1; // Default circle ID
+  const [kpis, setKpis] = useState<KPI[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   // Track view mode for each KPI (standard or chart)
-  const [kpiViewModes, setKpiViewModes] = useState<Record<string, 'standard' | 'chart'>>(
-    kpis.reduce((acc, kpi) => ({ ...acc, [kpi.id]: 'standard' }), {})
-  );
-
+  const [kpiViewModes, setKpiViewModes] = useState<Record<string, 'standard' | 'chart'>>({});
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Fetch KPIs on component mount
+  useEffect(() => {
+    const fetchKPIs = async () => {
+      try {
+        setLoading(true);
+        const data = await kpiService.getKPIs(circleId);
+        setKpis(data);
+        // Initialize view modes
+        setKpiViewModes(data.reduce((acc, kpi) => ({ ...acc, [kpi.id]: 'standard' }), {}));
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load KPIs:', err);
+        setError('Failed to load KPIs. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (circleId) {
+      fetchKPIs();
+    }
+  }, [circleId]);
 
   const toggleKpiView = (kpiId: string) => {
     setKpiViewModes(prev => ({
@@ -71,15 +49,21 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
     }));
   };
 
-  const handleCreateKPI = (kpiData: KPIFormData) => {
-    const newKPI: KPI = {
-      id: `kpi-${Date.now()}`,
-      ...kpiData,
-      trend: 'neutral',
-      percentageChange: 0
-    };
-    setKpis(prev => [...prev, newKPI]);
-    setKpiViewModes(prev => ({ ...prev, [newKPI.id]: 'standard' }));
+  const handleCreateKPI = async (kpiData: KPIFormData) => {
+    try {
+      const newKPI = await kpiService.createKPI(circleId, {
+        name: kpiData.name,
+        value: kpiData.value,
+        target: kpiData.target,
+        unit: kpiData.unit as any
+      });
+      setKpis(prev => [...prev, newKPI]);
+      setKpiViewModes(prev => ({ ...prev, [newKPI.id]: 'standard' }));
+      setShowCreateModal(false);
+    } catch (err) {
+      setError('Failed to create KPI');
+      console.error(err);
+    }
   };
 
   const getTrendIcon = (trend: 'up' | 'down' | 'neutral') => {
@@ -147,7 +131,7 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
               {progressPercentage.toFixed(0)}%
             </span>
             <span className="text-xs text-gray-500 mt-1">
-              {kpi.unit === '$' ? kpi.unit : ''}{kpi.value.toLocaleString()}{kpi.unit !== '$' ? kpi.unit : ''}
+              {kpi.unit === '$' ? kpi.unit : ''}{kpi.value.toLocaleString()}{kpi.unit && kpi.unit !== '$' ? kpi.unit : ''}
             </span>
           </div>
         </div>
@@ -173,67 +157,72 @@ export default function KPIManager({ circleId: _circleId, isModerator }: KPIMana
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {kpis.map((kpi) => {
-          const progressPercentage = getProgressPercentage(kpi.value, kpi.target);
-          const isChartView = kpiViewModes[kpi.id] === 'chart';
-          
-          return (
-            <div key={kpi.id} className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
-              <div className="flex items-start justify-between mb-2">
-                <h4 className="text-sm font-semibold text-gray-900">{kpi.name}</h4>
-                <div className="flex items-center gap-2">
-                  {/* View Toggle Button */}
-                  <button
-                    onClick={() => toggleKpiView(kpi.id)}
-                    className="text-xs font-medium text-blue-600 hover:text-blue-700 underline transition-colors"
-                    title={isChartView ? 'Switch to standard view' : 'Switch to chart view'}
-                  >
-                    {isChartView ? 'Show Standard' : 'Show Chart'}
-                  </button>
-                  {!isChartView && (
-                    <div className="flex items-center gap-1">
-                      {getTrendIcon(kpi.trend)}
-                      <span className={`text-xs font-medium ${kpi.trend === 'up' ? 'text-green-600' : kpi.trend === 'down' ? 'text-red-600' : 'text-gray-600'}`}>
-                        {kpi.percentageChange > 0 ? '+' : ''}{kpi.percentageChange}%
-                      </span>
-                    </div>
-                  )}
+      {loading && <div className="text-center py-4 text-gray-600">Loading KPIs...</div>}
+      {error && <div className="text-center py-4 text-red-600">{error}</div>}
+      
+      {!loading && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {kpis.map((kpi) => {
+            const progressPercentage = getProgressPercentage(kpi.value, kpi.target);
+            const isChartView = kpiViewModes[kpi.id] === 'chart';
+            
+            return (
+              <div key={kpi.id} className="border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-colors">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="text-sm font-semibold text-gray-900">{kpi.name}</h4>
+                  <div className="flex items-center gap-2">
+                    {/* View Toggle Button */}
+                    <button
+                      onClick={() => toggleKpiView(kpi.id)}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 underline transition-colors"
+                      title={isChartView ? 'Switch to standard view' : 'Switch to chart view'}
+                    >
+                      {isChartView ? 'Show Standard' : 'Show Chart'}
+                    </button>
+                    {!isChartView && (
+                      <div className="flex items-center gap-1">
+                        {getTrendIcon(kpi.trend)}
+                        <span className={`text-xs font-medium ${kpi.trend === 'up' ? 'text-green-600' : kpi.trend === 'down' ? 'text-red-600' : 'text-gray-600'}`}>
+                          {kpi.percentageChange > 0 ? '+' : ''}{kpi.percentageChange}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {isChartView ? (
-                renderCircularChart(kpi)
-              ) : (
-                <>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {kpi.unit === '$' ? kpi.unit : ''}{kpi.value.toLocaleString()}{kpi.unit !== '$' ? kpi.unit : ''}
-                    </span>
-                    <span className="text-xs text-gray-500">/ {kpi.unit === '$' ? kpi.unit : ''}{kpi.target.toLocaleString()}{kpi.unit !== '$' ? kpi.unit : ''}</span>
-                  </div>
-                  
-                  <div className="mt-2">
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>Progress</span>
-                      <span>{progressPercentage.toFixed(0)}%</span>
+                {isChartView ? (
+                  renderCircularChart(kpi)
+                ) : (
+                  <>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-2xl font-bold text-gray-900">
+                        {kpi.unit === '$' ? kpi.unit : ''}{kpi.value.toLocaleString()}{kpi.unit && kpi.unit !== '$' ? kpi.unit : ''}
+                      </span>
+                      <span className="text-xs text-gray-500">/ {kpi.unit === '$' ? kpi.unit : ''}{kpi.target.toLocaleString()}{kpi.unit && kpi.unit !== '$' ? kpi.unit : ''}</span>
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${progressPercentage}%`,
-                          backgroundColor: progressPercentage >= 100 ? '#10B981' : COLORS.primary
-                        }}
-                      />
+                    
+                    <div className="mt-2">
+                      <div className="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>Progress</span>
+                        <span>{progressPercentage.toFixed(0)}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${progressPercentage}%`,
+                            backgroundColor: progressPercentage >= 100 ? '#10B981' : COLORS.primary
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <CreateKPIModal
         isOpen={showCreateModal}
