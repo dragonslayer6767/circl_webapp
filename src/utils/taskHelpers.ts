@@ -4,6 +4,17 @@ import { TaskItem, TaskStatus, TaskPriority } from '../types/dashboard';
 export const sampleTasks: TaskItem[] = [
   {
     id: '1',
+    title: 'Connect with 3 potential customers',
+    description: 'Reach out to prospects in target market to gather feedback and validate product-market fit',
+    status: TaskStatus.InProgress,
+    assignees: ['user-1'],
+    startDate: new Date('2026-02-12'),
+    endDate: new Date('2026-02-12'),
+    priority: TaskPriority.High,
+    createdAt: new Date('2026-02-12'),
+  },
+  {
+    id: '2',
     title: 'Review marketing strategy',
     description: 'Analyze current marketing approach and identify improvement opportunities',
     status: TaskStatus.InProgress,
@@ -15,7 +26,7 @@ export const sampleTasks: TaskItem[] = [
     createdAt: new Date('2024-01-10'),
   },
   {
-    id: '2',
+    id: '3',
     title: 'Update financial projections',
     description: 'Revise Q1 and Q2 financial forecasts based on recent performance',
     status: TaskStatus.NotStarted,
@@ -27,7 +38,7 @@ export const sampleTasks: TaskItem[] = [
     createdAt: new Date('2024-01-12'),
   },
   {
-    id: '3',
+    id: '4',
     title: 'Schedule team meeting',
     description: 'Coordinate with all team members for monthly sync',
     status: TaskStatus.InProgress,
@@ -39,7 +50,7 @@ export const sampleTasks: TaskItem[] = [
     createdAt: new Date('2024-01-14'),
   },
   {
-    id: '4',
+    id: '5',
     title: 'Prepare pitch deck',
     description: 'Create comprehensive presentation for investor meeting',
     status: TaskStatus.NotStarted,
@@ -51,7 +62,7 @@ export const sampleTasks: TaskItem[] = [
     createdAt: new Date('2024-01-15'),
   },
   {
-    id: '5',
+    id: '6',
     title: 'User feedback analysis',
     description: 'Compile and analyze feedback from beta testers',
     status: TaskStatus.Paused,
@@ -66,10 +77,8 @@ export const sampleTasks: TaskItem[] = [
 
 // Initialize tasks in localStorage for demo purposes
 export function initializeSampleTasks() {
-  const existing = localStorage.getItem('userCircleTasks');
-  if (!existing) {
-    localStorage.setItem('userCircleTasks', JSON.stringify(sampleTasks));
-  }
+  // Force update to always use the latest sample tasks for demo
+  localStorage.setItem('userCircleTasks', JSON.stringify(sampleTasks));
 }
 
 // Get tasks from localStorage
@@ -80,10 +89,12 @@ export function getTasks(): TaskItem[] {
       return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to parse tasks:', e);
-      return [];
+      return sampleTasks; // Return sample tasks on error
     }
   }
-  return [];
+  // If no stored tasks, initialize and return sample tasks
+  localStorage.setItem('userCircleTasks', JSON.stringify(sampleTasks));
+  return sampleTasks;
 }
 
 // Save tasks to localStorage

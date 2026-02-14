@@ -10,7 +10,6 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { isPanelMode, setIsPanelMode } = useCircleView();
   const [showCompletionPopup, setShowCompletionPopup] = useState(false);
   const [showCreateCirclePopup, setShowCreateCirclePopup] = useState(false);
   const [showCircleCreationModal, setShowCircleCreationModal] = useState(false);
@@ -77,8 +76,6 @@ export default function Header() {
     }
   };
 
-  // Check if we're on a circle view page
-  const isOnCircleView = /^\/circles\/\d+/.test(location.pathname);
 
   return (
     <header 
@@ -99,7 +96,8 @@ export default function Header() {
         {/* Right side indicators */}
         <div className="flex items-center gap-2">
           {/* Circle View Mode Toggle - Only show on circle pages */}
-          {isOnCircleView && (
+          {/* Temporarily disabled - Single View and Multi-Panel toggle */}
+          {/* {isOnCircleView && (
             <div className="flex items-center space-x-2 bg-white rounded-lg shadow-lg p-1">
               <button
                 onClick={() => setIsPanelMode(false)}
@@ -122,7 +120,7 @@ export default function Header() {
                 Multi-Panel
               </button>
             </div>
-          )}
+          )} */}
 
           {/* Create Circle Indicator */}
           <div className="relative">

@@ -13,6 +13,8 @@ import KanbanBoard from './KanbanBoard.tsx';
 import ProjectGrid from './ProjectGrid.tsx';
 import CreateTaskModal, { TaskFormData } from './CreateTaskModal';
 import TaskDetailModal from './TaskDetailModal';
+import KPIManager from './KPIManager';
+import CRMManager from './CRMManager';
 
 interface DashboardViewProps {
   circleId: number;
@@ -347,6 +349,12 @@ export default function DashboardView({
         </div>
       )}
 
+      {/* KPI Manager Section */}
+      <div className="bg-white rounded-xl p-4 mb-5 shadow-sm">
+        <h3 className="text-base font-bold text-gray-900 mb-4">KPI Tracker</h3>
+        <KPIManager circleId={circleId} isModerator={isModerator} />
+      </div>
+
       {/* Task Manager Section */}
       <div className="bg-white rounded-xl p-4 mb-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
@@ -391,6 +399,12 @@ export default function DashboardView({
         ) : (
           <ProjectGrid projects={projects} />
         )}
+      </div>
+
+      {/* CRM Manager Section */}
+      <div className="bg-white rounded-xl p-4 mb-5 shadow-sm">
+        <h3 className="text-base font-bold text-gray-900 mb-4">Contact Management</h3>
+        <CRMManager circleId={circleId} isModerator={isModerator} />
       </div>
 
       {/* Leaderboard */}

@@ -8,6 +8,7 @@ import DashboardView from './components/DashboardView';
 import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
 import CreateThreadModal from './components/CreateThreadModal';
 import ResizablePanels from '../../components/circles/ResizablePanels';
+import AIChatbot from '../../components/circles/AIChatbot';
 
 interface Announcement {
   id: number;
@@ -51,6 +52,8 @@ export default function CircleView() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCircleSwitcher, setShowCircleSwitcher] = useState(false);
   const [showCreateThread, setShowCreateThread] = useState(false);
+  const [showAIChatbot, setShowAIChatbot] = useState(false);
+  const [athenaState, setAthenaState] = useState<'collapsed' | 'expanded' | 'fullscreen'>('collapsed');
 
   useEffect(() => {
     if (circleId) {
@@ -129,7 +132,7 @@ export default function CircleView() {
         {
           id: 1,
           author: 'Sarah Johnson',
-          content: 'Just closed our seed round! $750K from two local angels. Happy to share pitch deck lessons learned.',
+          content: 'Customer discovery insight: Talked to 3 potential customers today. They all mentioned pricing concerns with our tier structure. Should we consider a freemium model?',
           created_at: '3 hours ago',
           likes: 24,
           comments: 12
@@ -137,7 +140,7 @@ export default function CircleView() {
         {
           id: 2,
           author: 'Michael Chen',
-          content: 'Our MVP is live! Got 50 beta users in the first week. Who wants to do a user testing swap?',
+          content: 'Quick dev question: Anyone have experience integrating Stripe webhooks with our current auth system? Running into some edge cases with subscription updates.',
           created_at: '5 hours ago',
           likes: 18,
           comments: 8
@@ -145,7 +148,7 @@ export default function CircleView() {
         {
           id: 3,
           author: 'Jessica Martinez',
-          content: 'Looking for a technical co-founder with React/Node experience. Anyone interested or know someone?',
+          content: 'Marketing update: Our LinkedIn campaign is performing 3x better than expected. Engagement rate at 8.2%. Should we reallocate budget from other channels?',
           created_at: '1 day ago',
           likes: 15,
           comments: 7
@@ -153,7 +156,7 @@ export default function CircleView() {
         {
           id: 4,
           author: 'David Park',
-          content: 'Customer discovery update: 25 interviews done. The problem is bigger than we thought. Pivot time?',
+          content: 'User feedback summary: Analyzed 25 support tickets from this week. Top request is dark mode (mentioned 18 times). Worth prioritizing in next sprint?',
           created_at: '2 days ago',
           likes: 11,
           comments: 9
@@ -162,7 +165,7 @@ export default function CircleView() {
         {
           id: 1,
           author: 'Alex Martinez',
-          content: 'Just hit 10k users with our product launch! Here are the growth tactics that worked...',
+          content: 'Sales win: Just closed our largest enterprise deal - $50k ARR. Key insight: they valued our compliance features more than we realized. Should we emphasize this in messaging?',
           created_at: '2 hours ago',
           likes: 24,
           comments: 8
@@ -170,7 +173,7 @@ export default function CircleView() {
         {
           id: 2,
           author: 'Emily Davis',
-          content: 'Anyone experimenting with viral loops? Would love to share notes.',
+          content: 'Product idea: What if we added team collaboration features? Three customers this week asked about multi-user workflows.',
           created_at: '4 hours ago',
           likes: 15,
           comments: 6
@@ -315,8 +318,8 @@ export default function CircleView() {
         {/* Announcements Section */}
         <div className="mb-6">
           <div className="flex items-center space-x-2 mb-3">
-            <svg className="w-5 h-5 flex-shrink-0" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 24 24">
-              <path d="M21.88 8.61c.1.51.12 1.02.12 1.53 0 .51-.02 1.02-.12 1.53-.98 5.19-5.69 9.08-11.17 9.08-1.08 0-2.13-.14-3.15-.42l-2.88 2.88c-.24.24-.64.24-.88 0-.24-.24-.24-.64 0-.88l2.88-2.88c-2.78-1.93-4.65-5.05-4.65-8.63 0-.51.02-1.02.12-1.53.98-5.19 5.69-9.08 11.17-9.08 1.08 0 2.13.14 3.15.42l2.88-2.88c.24-.24.64-.24.88 0 .24.24.24.64 0 .88l-2.88 2.88c2.78 1.93 4.65 5.05 4.65 8.63zm-11.88-6.46c-4.27 0-8.02 3.15-8.66 7.35-.07.41-.11.83-.11 1.25 0 .42.04.84.11 1.25.64 4.2 4.39 7.35 8.66 7.35s8.02-3.15 8.66-7.35c.07-.41.11-.83.11-1.25 0-.42-.04-.84-.11-1.25-.64-4.2-4.39-7.35-8.66-7.35zm0 4.5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z" />
+            <svg className="w-5 h-5 flex-shrink-0" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
+              <path d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" />
             </svg>
             <h2 className="text-base font-bold text-gray-900">Announcements</h2>
           </div>
@@ -496,7 +499,7 @@ export default function CircleView() {
   const getPanelTitle = (panelType: PanelType): string => {
     switch (panelType) {
       case 'home':
-        return 'Home';
+        return 'Team Home';
       case 'dashboard':
         return 'Dashboard';
       case 'calendar':
@@ -570,8 +573,8 @@ export default function CircleView() {
           {/* Announcements Section */}
           <div className="mb-6 px-5">
             <div className="flex items-center space-x-2 mb-3">
-              <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 24 24">
-                <path d="M21.88 8.61c.1.51.12 1.02.12 1.53 0 .51-.02 1.02-.12 1.53-.98 5.19-5.69 9.08-11.17 9.08-1.08 0-2.13-.14-3.15-.42l-2.88 2.88c-.24.24-.64.24-.88 0-.24-.24-.24-.64 0-.88l2.88-2.88c-2.78-1.93-4.65-5.05-4.65-8.63 0-.51.02-1.02.12-1.53.98-5.19 5.69-9.08 11.17-9.08 1.08 0 2.13.14 3.15.42l2.88-2.88c.24-.24.64-.24.88 0 .24.24.24.64 0 .88l-2.88 2.88c2.78 1.93 4.65 5.05 4.65 8.63zm-11.88-6.46c-4.27 0-8.02 3.15-8.66 7.35-.07.41-.11.83-.11 1.25 0 .42.04.84.11 1.25.64 4.2 4.39 7.35 8.66 7.35s8.02-3.15 8.66-7.35c.07-.41.11-.83.11-1.25 0-.42-.04-.84-.11-1.25-.64-4.2-4.39-7.35-8.66-7.35zm0 4.5c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z" />
+              <svg className="w-5 h-5" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
+                <path d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" />
               </svg>
               <h2 className="text-base font-bold text-gray-900">Announcements</h2>
             </div>
@@ -767,8 +770,17 @@ export default function CircleView() {
     );
   }
 
+  // Calculate content width based on Athena state
+  const getContentMargin = () => {
+    if (athenaState === 'fullscreen') return 'mr-0';
+    if (athenaState === 'expanded') return 'mr-96'; // 384px for Athena panel
+    return 'mr-16'; // 64px for collapsed icon
+  };
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f5f5f5' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: '#f5f5f5' }}>
+      {/* Main Content Area */}
+      <div className={`flex-1 transition-all duration-300 ${getContentMargin()}`}>
       {/* Header with Tabs and Panel Controls */}
       <div className="sticky top-16 z-20" style={{ backgroundColor: COLORS.primary }}>
         {!isPanelMode ? (
@@ -802,7 +814,7 @@ export default function CircleView() {
                   <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                 </svg>
                 <span className={`text-white text-sm ${activeTab === 'home' ? 'font-semibold' : 'font-normal opacity-70'}`}>
-                  Home
+                  Team Home
                 </span>
               </div>
               <div className={`h-0.5 w-12 mt-2 transition-all ${activeTab === 'home' ? 'bg-white' : 'bg-transparent'}`} />
@@ -910,6 +922,15 @@ export default function CircleView() {
           }}
         />
       )}
+      </div>
+
+      {/* AI Chatbot - Persistent Right Panel */}
+      <AIChatbot
+        displayState={athenaState}
+        onStateChange={setAthenaState}
+        circleName={circle?.name}
+        currentView={activeTab}
+      />
     </div>
   );
 }

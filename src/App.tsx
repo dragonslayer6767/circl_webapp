@@ -31,10 +31,14 @@ import BusinessProfile from './pages/BusinessProfile';
 import Circles from './pages/Circles';
 import CircleView from './pages/circles/CircleView';
 import ChannelChatView from './pages/circles/ChannelChatView';
+import { initializeSampleTasks } from './utils/taskHelpers';
 import './App.css';
 
 // Create a client for React Query
 const queryClient = new QueryClient();
+
+// Initialize sample tasks for demo
+initializeSampleTasks();
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
