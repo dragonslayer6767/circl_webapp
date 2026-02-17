@@ -145,7 +145,9 @@ export const authService = {
   },
 
   /**
-   * Register a new user
+   * Register a new user.
+   * Backend /users/register/ returns { message, user_id } — no token.
+   * We immediately call /login/ to obtain a token and log the user in.
    */
   async register(
     firstName: string,
@@ -153,14 +155,23 @@ export const authService = {
     email: string,
     password: string
   ): Promise<UserData> {
-    const response = await api.post<LoginResponse>('/users/register/', {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Step 1: create account
+    await api.post<{ message: string; user_id: number }>('/users/register/', {
       first_name: firstName,
       last_name: lastName,
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       password,
     });
 
-    const { token, user_id, email: userEmail, first_name, last_name } = response.data;
+    // Step 2: login to obtain token
+    const loginResponse = await api.post<LoginResponse>('/login/', {
+      email: normalizedEmail,
+      password,
+    });
+
+    const { token, user_id, email: userEmail, first_name, last_name } = loginResponse.data;
 
     localStorage.setItem('auth_token', token);
     localStorage.setItem('user_id', user_id.toString());
@@ -170,20 +181,17 @@ export const authService = {
     localStorage.setItem('user_fullname', fullname);
     localStorage.setItem('isLoggedIn', 'true');
 
-    console.log('✅ Registration successful:', { user_id, email: userEmail });
-
     return { user_id, email: userEmail, fullname };
   },
 
   /**
-   * Send forgot password request
+   * Send forgot password request.
+   * Correct path is /forgot-password/ (not /users/forgot-password/).
    */
   async forgotPassword(email: string): Promise<void> {
-    await api.post('/users/forgot-password/', {
+    await api.post('/forgot-password/', {
       email: email.trim().toLowerCase(),
     });
-
-    console.log('✅ Forgot password email sent to:', email);
   },
 };
 

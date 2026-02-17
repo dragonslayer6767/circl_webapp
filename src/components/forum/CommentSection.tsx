@@ -31,7 +31,7 @@ export default function CommentSection({
       setIsFetching(true);
       setError(null);
       const response = await forumService.getComments(postId);
-      setComments(response.results || []);
+      setComments(response);
     } catch (err) {
       console.error('Failed to fetch comments:', err);
       setError('Failed to load comments');
@@ -47,9 +47,7 @@ export default function CommentSection({
     try {
       setIsLoading(true);
       setError(null);
-      const comment = await forumService.createComment(postId, {
-        content: newComment,
-      });
+      const comment = await forumService.createComment(postId, newComment);
 
       setComments([...comments, comment]);
       setNewComment('');
@@ -60,10 +58,6 @@ export default function CommentSection({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCommentDelete = (commentId: number) => {
-    setComments(comments.filter(c => c.id !== commentId));
   };
 
   return (
@@ -110,8 +104,6 @@ export default function CommentSection({
                 <CommentItem
                   key={comment.id}
                   comment={comment}
-                  postId={postId}
-                  onDelete={() => handleCommentDelete(comment.id)}
                 />
               ))}
             </div>

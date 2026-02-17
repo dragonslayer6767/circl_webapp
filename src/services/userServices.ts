@@ -126,7 +126,12 @@ export const userService = {
 
   // Messaging: send a DM
   sendMessage: async (recipientId: number, content: string): Promise<DirectMessage> => {
-    const response = await api.post('/users/send_message/', { recipient_id: recipientId, content });
+    const senderId = parseInt(localStorage.getItem('user_id') || '0', 10);
+    const response = await api.post('/users/send_message/', {
+      sender_id: senderId,
+      receiver_id: recipientId,
+      content,
+    });
     return response.data;
   },
 

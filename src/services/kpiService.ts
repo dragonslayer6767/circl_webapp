@@ -88,7 +88,7 @@ export const kpiService = {
    */
   updateKPIValue: async (kpiId: string, currentValue: number): Promise<KPI> => {
     try {
-      const response = await api.post(`/kpi/kpis/${kpiId}/update-value/`, {
+      const response = await api.post(`/kpi/kpis/${kpiId}/update_value/`, {
         value: currentValue
       });
       return response.data;

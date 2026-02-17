@@ -157,9 +157,14 @@ export const circleService = {
     return response.data;
   },
 
-  // Send a channel message
+  // Send a channel message — backend reads request.data["user_id"], requires FormData
   sendMessage: async (channelId: number, content: string): Promise<ApiMessage> => {
-    const response = await api.post('/circles/send_message/', { channel_id: channelId, content });
+    const userId = localStorage.getItem('user_id');
+    const formData = new FormData();
+    formData.append('user_id', userId!);
+    formData.append('channel_id', channelId.toString());
+    formData.append('content', content);
+    const response = await api.post('/circles/send_message/', formData);
     return response.data;
   },
 

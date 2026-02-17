@@ -41,7 +41,7 @@ export default function CommentsModal({
       setIsLoading(true);
       setError(null);
       const response = await forumService.getComments(postId);
-      setComments(response.results || []);
+      setComments(response);
     } catch (err) {
       console.error('Failed to fetch comments:', err);
       setError('Failed to load comments. Please try again.');
@@ -56,9 +56,7 @@ export default function CommentsModal({
     try {
       setIsSubmitting(true);
       setError(null);
-      const comment = await forumService.createComment(postId, {
-        content: newComment,
-      });
+      const comment = await forumService.createComment(postId, newComment);
       
       setComments([...comments, comment]);
       setNewComment('');
@@ -87,9 +85,9 @@ export default function CommentsModal({
 
       // API call
       if (comment.liked_by_user) {
-        await forumService.unlikeComment(postId, comment.id);
+        await forumService.unlikeComment(comment.id);
       } else {
-        await forumService.likeComment(postId, comment.id);
+        await forumService.likeComment(comment.id);
       }
     } catch (err) {
       console.error('Failed to toggle like:', err);

@@ -4,15 +4,9 @@ import { forumService, Comment } from '../../services/forumService';
 
 interface CommentItemProps {
   comment: Comment;
-  postId: number;
-  onDelete?: (commentId: number) => void;
 }
 
-export default function CommentItem({
-  comment,
-  postId,
-  onDelete,
-}: CommentItemProps) {
+export default function CommentItem({ comment }: CommentItemProps) {
   const [liked, setLiked] = useState(comment.liked_by_user);
   const [likeCount, setLikeCount] = useState(comment.like_count);
   const [isLiking, setIsLiking] = useState(false);
@@ -20,34 +14,21 @@ export default function CommentItem({
   const handleLike = async () => {
     try {
       setIsLiking(true);
-      
+
       if (liked) {
-        await forumService.unlikeComment(postId, comment.id);
+        await forumService.unlikeComment(comment.id);
         setLiked(false);
         setLikeCount(count => count - 1);
       } else {
-        await forumService.likeComment(postId, comment.id);
+        await forumService.likeComment(comment.id);
         setLiked(true);
         setLikeCount(count => count + 1);
       }
     } catch (err) {
       console.error('Failed to toggle like:', err);
-      // Revert on error
       setLiked(!liked);
     } finally {
       setIsLiking(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm('Delete this comment?')) return;
-
-    try {
-      await forumService.deleteComment(postId, comment.id);
-      onDelete?.(comment.id);
-    } catch (err) {
-      console.error('Failed to delete comment:', err);
-      alert('Failed to delete comment');
     }
   };
 
@@ -94,12 +75,6 @@ export default function CommentItem({
                 />
               </svg>
               {likeCount > 0 && <span>{likeCount}</span>}
-            </button>
-            <button
-              onClick={handleDelete}
-              className="text-gray-500 hover:text-red-600 transition-colors"
-            >
-              Delete
             </button>
           </div>
         </div>
