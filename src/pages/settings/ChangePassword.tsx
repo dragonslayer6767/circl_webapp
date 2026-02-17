@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { COLORS } from '../../utils/colors';
+import { userService } from '../../services/userServices';
 
 export default function ChangePassword() {
   const [oldPassword, setOldPassword] = useState('');
@@ -7,6 +8,7 @@ export default function ChangePassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (newPassword !== confirmPassword) {
@@ -21,18 +23,23 @@ export default function ChangePassword() {
       return;
     }
 
-    // TODO: Implement API call
-    console.log('Changing password');
-    setMessage('Password updated successfully');
-    setIsSuccess(true);
-    
-    // Reset form
-    setTimeout(() => {
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setMessage('');
-    }, 3000);
+    setIsLoading(true);
+    try {
+      await userService.changePassword(oldPassword, newPassword);
+      setMessage('Password updated successfully');
+      setIsSuccess(true);
+      setTimeout(() => {
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setMessage('');
+      }, 3000);
+    } catch {
+      setMessage('Failed to update password. Please check your current password.');
+      setIsSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -99,19 +106,19 @@ export default function ChangePassword() {
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
-            disabled={!oldPassword || !newPassword || !confirmPassword}
+            disabled={!oldPassword || !newPassword || !confirmPassword || isLoading}
             className={`w-full py-4 rounded-xl text-white font-semibold transition-all shadow-lg ${
-              !oldPassword || !newPassword || !confirmPassword
+              !oldPassword || !newPassword || !confirmPassword || isLoading
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'hover:shadow-xl hover:scale-[1.02]'
             }`}
             style={{
-              background: (!oldPassword || !newPassword || !confirmPassword)
+              background: (!oldPassword || !newPassword || !confirmPassword || isLoading)
                 ? undefined
                 : `linear-gradient(90deg, ${COLORS.primary}, #0066ff)`
             }}
           >
-            Update Password
+            {isLoading ? 'Updating...' : 'Update Password'}
           </button>
 
           {/* Message */}

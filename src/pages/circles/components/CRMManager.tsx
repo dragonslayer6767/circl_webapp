@@ -1,111 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { crmService } from '../../../services/crmService';
+import { Contact, ContactStatus, FunnelStage } from '../../../types/crm';
 import { COLORS } from '../../../utils/colors';
-import CreateContactModal, { ContactFormData } from './CreateContactModal';
-import ContactDetailModal from './ContactDetailModal';
-
-interface Contact {
-  id: string;
-  name: string;
-  email: string;
-  company?: string;
-  phone?: string;
-  status: 'lead' | 'prospect' | 'customer' | 'partner';
-  funnelStage: 'needs_outreach' | 'contacted' | 'meeting_set' | 'proposal_sent' | 'negotiation' | 'blocked' | 'closed_won' | 'closed_lost';
-  lastContact: Date;
-  notes: string;
-  notesHistory?: { date: Date; note: string }[];
-}
 
 interface CRMManagerProps {
   circleId: number;
   isModerator: boolean;
 }
 
-type FilterStatus = 'all' | 'lead' | 'prospect' | 'customer' | 'partner';
 type ViewMode = 'list' | 'funnel';
+type FilterStatus = ContactStatus | 'all';
 
-const FUNNEL_STAGES = [
-  { id: 'needs_outreach', label: 'Needs Outreach', color: '#EF4444' },
-  { id: 'contacted', label: 'Contacted', color: '#F59E0B' },
-  { id: 'meeting_set', label: 'Meeting Set', color: '#3B82F6' },
-  { id: 'proposal_sent', label: 'Proposal Sent', color: '#8B5CF6' },
-  { id: 'negotiation', label: 'Negotiation', color: '#EC4899' },
-  { id: 'blocked', label: 'Blocked', color: '#DC2626' },
-  { id: 'closed_won', label: 'Closed Won', color: '#10B981' },
-  { id: 'closed_lost', label: 'Closed Lost', color: '#6B7280' }
-] as const;
+const STATUS_COLORS: Record<ContactStatus, string> = {
+  lead: '#3B82F6',
+  prospect: '#8B5CF6',
+  customer: '#10B981',
+  partner: '#F59E0B'
+};
 
-export default function CRMManager({ circleId: _circleId, isModerator }: CRMManagerProps) {
-  const [contacts, setContacts] = useState<Contact[]>([
-    {
-      id: 'contact-1',
-      name: 'Sarah Johnson',
-      email: 'sarah.j@techcorp.com',
-      company: 'TechCorp Inc.',
-      phone: '+1 (555) 123-4567',
-      status: 'customer',
-      funnelStage: 'closed_won',
-      lastContact: new Date('2025-12-20'),
-      notes: 'Interested in premium package',
-      notesHistory: [
-        { date: new Date('2025-12-15'), note: 'Initial contact made, very interested' },
-        { date: new Date('2025-12-18'), note: 'Sent pricing information' }
-      ]
-    },
-    {
-      id: 'contact-2',
-      name: 'Michael Chen',
-      email: 'mchen@startup.io',
-      company: 'Startup.io',
-      phone: '+1 (555) 987-6543',
-      status: 'prospect',
-      funnelStage: 'meeting_set',
-      lastContact: new Date('2025-12-22'),
-      notes: 'Follow up next week'
-    },
-    {
-      id: 'contact-3',
-      name: 'Emma Wilson',
-      email: 'emma.w@design.co',
-      company: 'Design Co.',
-      status: 'lead',
-      funnelStage: 'needs_outreach',
-      lastContact: new Date('2025-12-18'),
-      notes: 'Met at networking event'
-    },
-    {
-      id: 'contact-4',
-      name: 'David Brown',
-      email: 'dbrown@partners.com',
-      company: 'Partners LLC',
-      phone: '+1 (555) 456-7890',
-      status: 'partner',
-      funnelStage: 'negotiation',
-      lastContact: new Date('2025-12-25'),
-      notes: 'Strategic partnership discussion'
-    },
-    {
-      id: 'contact-5',
-      name: 'Lisa Anderson',
-      email: 'landerson@corp.com',
-      company: 'Corp Solutions',
-      phone: '+1 (555) 234-5678',
-      status: 'prospect',
-      funnelStage: 'contacted',
-      lastContact: new Date('2025-12-23'),
-      notes: 'Initial call went well'
-    },
-    {
-      id: 'contact-6',
-      name: 'James Miller',
-      email: 'jmiller@venture.io',
-      company: 'Venture Capital',
-      status: 'lead',
-      funnelStage: 'proposal_sent',
-      lastContact: new Date('2025-12-24'),
-      notes: 'Awaiting feedback on proposal'
-    }
-  ]);
+const FUNNEL_STAGES: FunnelStage[] = [
+  'needs_outreach',
+  'contacted',
+  'meeting_set',
+  'proposal_sent',
+  'negotiation',
+  'blocked',
+  'closed_won',
+  'closed_lost'
+];
+
+const FUNNEL_STAGE_LABELS: Record<FunnelStage, string> = {
+  needs_outreach: 'Needs Outreach',
+  contacted: 'Contacted',
+  meeting_set: 'Meeting Set',
+  proposal_sent: 'Proposal Sent',
+  negotiation: 'Negotiation',
+  blocked: 'Blocked',
+  closed_won: 'Closed Won',
+  closed_lost: 'Closed Lost'
+};
+
+export default function CRMManager({ circleId, isModerator }: CRMManagerProps) {
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');

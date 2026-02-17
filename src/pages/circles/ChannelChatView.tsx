@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useAuth } from '../../hooks/useAuth';
+import { circleService } from '../../services/circleServices';
 
 interface ChatMessage {
   id: string;
@@ -37,84 +38,63 @@ export default function ChannelChatView() {
   const [availableChannels, setAvailableChannels] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    // TODO: Fetch channel and circle details from API
-    // Mock data for now
-    const mockChannels: { [key: string]: string } = {
-      '1': 'General',
-      '2': 'Random',
-      '3': 'Announcements',
-      '4': 'Tech-Talk',
-      '5': 'Resources'
-    };
+    if (!circleId || !channelId || !user?.user_id) return;
+    const cId = parseInt(circleId);
+    const chId = parseInt(channelId);
 
-    const mockCircleNames: { [key: string]: string } = {
-      '1': 'Tech Leaders Council',
-      '2': 'Growth Hackers'
-    };
+    Promise.all([
+      circleService.getChannels(cId),
+      circleService.getMessages(chId),
+      circleService.getCircleDetails(cId, user.user_id),
+    ]).then(([channelsData, messagesData, circleData]) => {
+      setAvailableChannels(channelsData.map((ch) => ({ id: ch.id.toString(), name: ch.name })));
+      const currentChannel = channelsData.find((ch) => ch.id === chId);
+      if (currentChannel) setChannelName(currentChannel.name);
+      setCircleName(circleData.name);
+      setIsModerator(circleData.is_moderator);
 
-    setChannelName(mockChannels[channelId || '1'] || 'General');
-    setCircleName(mockCircleNames[circleId || '1'] || 'Test');
-    
-    // TODO: Fetch from API - for now, circle 1 user is moderator
-    setIsModerator(circleId === '1');
-    
-    // Set available channels for dropdown
-    setAvailableChannels([
-      { id: '1', name: 'General' },
-      { id: '2', name: 'Random' },
-      { id: '3', name: 'Announcements' },
-      { id: '4', name: 'Tech-Talk' },
-      { id: '5', name: 'Resources' }
-    ]);
-
-    // Mock online count
-    setOnlineCount(Math.floor(Math.random() * memberCount) + 1);
-
-    // Mock messages
-    const mockMessages: ChatMessage[] = [
-      {
-        id: '1',
-        text: 'Welcome to the channel!',
-        timestamp: new Date(Date.now() - 3600000),
-        senderId: 2,
-        senderName: 'Sarah Chen',
-        senderAvatar: 'https://i.pravatar.cc/150?img=2'
-      },
-      {
-        id: '2',
-        text: 'Excited to connect with everyone here!',
-        timestamp: new Date(Date.now() - 3000000),
-        senderId: 3,
-        senderName: 'Mike Johnson',
-        senderAvatar: 'https://i.pravatar.cc/150?img=3'
-      },
-      {
-        id: '3',
-        text: 'Testing message',
-        timestamp: new Date(Date.now() - 1800000),
-        senderId: 1,
-        senderName: user?.fullname || 'You',
-      }
-    ];
-    setMessages(mockMessages);
-  }, [circleId, channelId, memberCount, user]);
+      setMessages(
+        messagesData.map((m) => ({
+          id: m.id.toString(),
+          text: m.content,
+          timestamp: new Date(m.created_at),
+          senderId: m.sender_id,
+          senderName: m.sender_name,
+          senderAvatar: m.sender_avatar,
+        }))
+      );
+      setOnlineCount(Math.max(1, Math.floor(messagesData.length / 3)));
+    }).catch((err) => {
+      console.error('Failed to load channel data:', err);
+    });
+  }, [circleId, channelId, user?.user_id]);
 
   useEffect(() => {
     // Scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (messageText.trim()) {
-      const newMessage: ChatMessage = {
-        id: Date.now().toString(),
-        text: messageText,
-        timestamp: new Date(),
-        senderId: 1, // Current user
-        senderName: 'You',
-      };
-      setMessages([...messages, newMessage]);
-      setMessageText('');
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !channelId) return;
+    const chId = parseInt(channelId);
+    const text = messageText;
+    setMessageText('');
+    try {
+      const sent = await circleService.sendMessage(chId, text);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: sent.id.toString(),
+          text: sent.content,
+          timestamp: new Date(sent.created_at),
+          senderId: sent.sender_id,
+          senderName: sent.sender_name,
+          senderAvatar: sent.sender_avatar,
+        },
+      ]);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      setMessageText(text); // restore on failure
     }
   };
 
@@ -279,7 +259,7 @@ export default function ChannelChatView() {
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50">
         {messages.map((message) => {
-          const isCurrentUser = message.senderId === 1;
+          const isCurrentUser = message.senderId === user?.user_id;
           
           return (
             <div

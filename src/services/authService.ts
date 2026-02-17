@@ -145,13 +145,44 @@ export const authService = {
   },
 
   /**
+   * Register a new user
+   */
+  async register(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ): Promise<UserData> {
+    const response = await api.post<LoginResponse>('/users/register/', {
+      first_name: firstName,
+      last_name: lastName,
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    const { token, user_id, email: userEmail, first_name, last_name } = response.data;
+
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('user_id', user_id.toString());
+    localStorage.setItem('user_email', userEmail);
+
+    const fullname = first_name && last_name ? `${first_name} ${last_name}` : userEmail;
+    localStorage.setItem('user_fullname', fullname);
+    localStorage.setItem('isLoggedIn', 'true');
+
+    console.log('✅ Registration successful:', { user_id, email: userEmail });
+
+    return { user_id, email: userEmail, fullname };
+  },
+
+  /**
    * Send forgot password request
    */
   async forgotPassword(email: string): Promise<void> {
-    await api.post('/forgot-password/', {
+    await api.post('/users/forgot-password/', {
       email: email.trim().toLowerCase(),
     });
-    
+
     console.log('✅ Forgot password email sent to:', email);
   },
 };

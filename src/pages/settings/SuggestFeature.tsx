@@ -1,21 +1,28 @@
 import { useState } from 'react';
 import { COLORS } from '../../utils/colors';
+import { userService } from '../../services/userServices';
 
 export default function SuggestFeature() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
-    // TODO: Implement API call
-    console.log('Submitting feature suggestion:', { title, description });
-    setIsSubmitted(true);
-    
-    setTimeout(() => {
-      setTitle('');
-      setDescription('');
-      setIsSubmitted(false);
-    }, 3000);
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      await userService.submitFeedback(title, description);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setTitle('');
+        setDescription('');
+        setIsSubmitted(false);
+      }, 3000);
+    } catch {
+      // keep form state so user can retry
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -59,15 +66,15 @@ export default function SuggestFeature() {
 
           <button
             onClick={handleSubmit}
-            disabled={!title || !description || isSubmitted}
+            disabled={!title || !description || isSubmitted || isLoading}
             className={`w-full py-4 rounded-xl text-white font-semibold transition-all ${
-              !title || !description || isSubmitted ? 'bg-gray-300 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'
+              !title || !description || isSubmitted || isLoading ? 'bg-gray-300 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'
             }`}
             style={{
-              background: isSubmitted ? '#10b981' : (!title || !description) ? undefined : `linear-gradient(90deg, ${COLORS.primary}, #0066ff)`
+              background: isSubmitted ? '#10b981' : (!title || !description || isLoading) ? undefined : `linear-gradient(90deg, ${COLORS.primary}, #0066ff)`
             }}
           >
-            {isSubmitted ? '✓ Suggestion Submitted!' : 'Submit Suggestion'}
+            {isLoading ? 'Submitting...' : isSubmitted ? '✓ Suggestion Submitted!' : 'Submit Suggestion'}
           </button>
 
           {isSubmitted && (

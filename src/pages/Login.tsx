@@ -1,71 +1,60 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotification } from '../context/NotificationContext';
+import { useAuth } from '../hooks/useAuth';
+import { authService } from '../services/authService';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 import { COLORS } from '../utils/colors';
 
 export default function Login() {
-  const [email, setEmail] = useState('circltest@gmail.com');
-  const [password, setPassword] = useState('123456789');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
+
   const navigate = useNavigate();
-  const { addNotification } = useNotification();
+  const { login } = useAuth();
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
-      addNotification('Please enter both email and password', 'error');
+      showErrorToast('Please enter both email and password');
       return;
     }
 
     setIsLoading(true);
-    
-    // PLACEHOLDER: Bypass authentication for testing
-    // TODO: Re-enable actual authentication when backend is ready
-    
-    // Simulate loading delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Set mock user data in localStorage
-    localStorage.setItem('auth_token', 'mock-token-12345');
-    localStorage.setItem('user_id', '1');
-    localStorage.setItem('email', email);
-    localStorage.setItem('fullname', 'Test User');
-    
-    setIsLoading(false);
-    addNotification('Welcome back!', 'success');
-    
-    // Use window.location for full page reload to update AuthContext
-    window.location.href = '/forum';
-
-    /* ACTUAL AUTHENTICATION (currently disabled):
     try {
       await login(email.trim().toLowerCase(), password);
-      addNotification('Welcome back!', 'success');
+      showSuccessToast('Welcome back!');
       navigate('/forum');
-    } catch (error) {
-      addNotification('The email or password you entered is incorrect. Please try again.', 'error');
+    } catch {
+      showErrorToast('The email or password you entered is incorrect. Please try again.');
     } finally {
       setIsLoading(false);
     }
-    */
   };
 
   const handleForgotPassword = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!forgotPasswordEmail) {
-      addNotification('Please enter your email', 'error');
+      showErrorToast('Please enter your email');
       return;
     }
 
-    // TODO: Implement forgot password API call
-    addNotification('We will get back to you soon with a new password.', 'success');
-    setShowForgotPassword(false);
-    setForgotPasswordEmail('');
+    setIsForgotLoading(true);
+    try {
+      await authService.forgotPassword(forgotPasswordEmail);
+      showSuccessToast('We will get back to you soon with a new password.');
+      setShowForgotPassword(false);
+      setForgotPasswordEmail('');
+    } catch {
+      showErrorToast('Something went wrong. Please try again.');
+    } finally {
+      setIsForgotLoading(false);
+    }
   };
 
   const handleJoinCircl = () => {
@@ -192,13 +181,14 @@ export default function Login() {
               
               <button
                 type="submit"
-                className="w-full py-3 font-bold rounded-xl"
+                disabled={isForgotLoading}
+                className="w-full py-3 font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: '#ffde59',
                   color: COLORS.primary,
                 }}
               >
-                Submit
+                {isForgotLoading ? 'Sending...' : 'Submit'}
               </button>
             </form>
           </div>

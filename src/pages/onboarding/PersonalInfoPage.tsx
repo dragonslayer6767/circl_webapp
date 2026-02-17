@@ -2,7 +2,8 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
-import { useNotification } from '../../context/NotificationContext';
+import { userService } from '../../services/userServices';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
 const genderOptions = ["Male", "Female", "Prefer not to say"];
 
@@ -18,7 +19,6 @@ const availabilityOptions = [
 export default function PersonalInfoPage() {
   const navigate = useNavigate();
   const { data, updateData, nextStep } = useOnboarding();
-  const { addNotification } = useNotification();
 
   const [birthday, setBirthday] = useState(data?.birthday || '');
   const [location, setLocation] = useState(data?.location || '');
@@ -148,27 +148,30 @@ export default function PersonalInfoPage() {
     e.preventDefault();
 
     if (!isFormComplete()) {
-      addNotification('Please fill out all required fields correctly', 'error');
+      showErrorToast('Please fill out all required fields correctly');
+      return;
+    }
+
+    const userId = data?.userId || parseInt(localStorage.getItem('user_id') || '0', 10);
+    if (!userId) {
+      showErrorToast('Session expired. Please start over.');
       return;
     }
 
     setIsSubmitting(true);
+    try {
+      await userService.updatePersonalDetails(userId, birthday, personalityType);
+      await userService.updateSkillsInterests(userId, [location]);
 
-    // Mock save - no API call for testing
-    setTimeout(() => {
-      updateData({
-        birthday,
-        location,
-        gender,
-        availability,
-        personalityType
-      });
-
-      addNotification('Personal information saved!', 'success');
-      setIsSubmitting(false);
+      updateData({ birthday, location, gender, availability, personalityType });
+      showSuccessToast('Personal information saved!');
       nextStep();
       navigate('/onboarding/notifications');
-    }, 500);
+    } catch {
+      showErrorToast('Failed to save information. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

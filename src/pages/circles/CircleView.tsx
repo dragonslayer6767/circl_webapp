@@ -3,34 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { Circle } from '../../types/circle';
 import { useCircleView } from '../../context/CircleViewContext';
+import { useAuth } from '../../hooks/useAuth';
+import { circleService, ApiThread, ApiChannel } from '../../services/circleServices';
 import CalendarView from './components/CalendarView';
 import DashboardView from './components/DashboardView';
 import CircleSettingsMenu from './components/CircleSettingsMenu.tsx';
 import CreateThreadModal from './components/CreateThreadModal';
 import ResizablePanels from '../../components/circles/ResizablePanels';
-
-interface Announcement {
-  id: number;
-  title: string;
-  content: string;
-  created_by: string;
-  created_at: string;
-}
-
-interface Thread {
-  id: number;
-  author: string;
-  content: string;
-  created_at: string;
-  likes: number;
-  comments: number;
-}
-
-interface Channel {
-  id: number;
-  name: string;
-  category: string;
-}
 
 type TabType = 'home' | 'dashboard' | 'calendar';
 type PanelType = 'home' | 'dashboard' | 'calendar';
@@ -39,164 +18,44 @@ export default function CircleView() {
   const { circleId } = useParams<{ circleId: string }>();
   const navigate = useNavigate();
   const { isPanelMode } = useCircleView();
-  
+  const { user } = useAuth();
+
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [activePanels, setActivePanels] = useState<PanelType[]>(['home']);
   const [circle, setCircle] = useState<Circle | null>(null);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [threads, setThreads] = useState<Thread[]>([]);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [myCircles, setMyCircles] = useState<Circle[]>([]); // TODO: Use for circle switcher dropdown
-  console.log(myCircles); // Suppress unused variable warning
+  const [announcements, setAnnouncements] = useState<{ id: number; title: string; content: string; created_by: string; created_at: string }[]>([]);
+  const [threads, setThreads] = useState<ApiThread[]>([]);
+  const [channels, setChannels] = useState<ApiChannel[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showCircleSwitcher, setShowCircleSwitcher] = useState(false);
   const [showCreateThread, setShowCreateThread] = useState(false);
 
   useEffect(() => {
-    if (circleId) {
-      // TODO: Fetch circle data from API
-      // Mock data for now - different data based on circleId
-      const currentUserId = 1; // TODO: Get from auth context
-      const id = parseInt(circleId);
+    if (!circleId || !user?.user_id) return;
+    const id = parseInt(circleId);
 
-      // Circle 1: Tech Leaders Council (User is moderator)
-      // Circle 2: Growth Hackers (User is not moderator)
-      const mockCircles: { [key: number]: Circle } = {
-        1: {
-          id: 1,
-          name: 'Tech Leaders Council',
-          industry: 'Technology',
-          pricing: 'Premium',
-          description: 'An exclusive circle for technology leaders to discuss innovation, strategy, and industry trends.',
-          join_type: 'Join Now',
-          member_count: 42,
-          is_private: false,
-          creator_id: currentUserId,
-          is_moderator: true,
-          has_dashboard: true,
-          is_dashboard_public: false
-        },
-        2: {
-          id: 2,
-          name: 'Growth Hackers',
-          industry: 'Marketing',
-          pricing: '',
-          description: 'Connect with growth-focused professionals. Discuss strategies, tactics, and tools for scaling businesses rapidly.',
-          join_type: 'Join Now',
-          member_count: 156,
-          is_private: false,
-          creator_id: 5,
-          is_moderator: false,
-          has_dashboard: true,
-          is_dashboard_public: true
-        }
-      };
-
-      const mockCircle = mockCircles[id] || {
-        id: id,
-        name: 'Test Circle',
-        industry: 'Technology',
-        pricing: 'Free',
-        description: 'Test circle',
-        join_type: 'Join Now',
-        member_count: 7,
-        is_private: false,
-        creator_id: currentUserId,
-        is_moderator: false,
-        has_dashboard: true,
-        is_dashboard_public: false
-      };
-
-      const mockAnnouncements: Announcement[] = id === 1 ? [
-        {
-          id: 1,
-          title: 'Welcome to Tech Leaders Council!',
-          content: 'We\'re excited to have you here. Share your insights and connect with fellow tech leaders.',
-          created_by: 'Admin',
-          created_at: '2 days ago'
-        }
-      ] : [
-        {
-          id: 1,
-          title: 'Monthly Growth Challenge',
-          content: 'Join our monthly challenge to grow your user base by 20%!',
-          created_by: 'Community Manager',
-          created_at: '1 day ago'
-        }
-      ];
-
-      const mockThreads: Thread[] = id === 1 ? [
-        {
-          id: 1,
-          author: 'Sarah Johnson',
-          content: 'What are your thoughts on the latest AI developments? How is everyone integrating AI into their tech stack?',
-          created_at: '3 hours ago',
-          likes: 12,
-          comments: 5
-        },
-        {
-          id: 2,
-          author: 'Michael Chen',
-          content: 'Looking for recommendations on cloud infrastructure providers. What has been your experience?',
-          created_at: '5 hours ago',
-          likes: 8,
-          comments: 3
-        }
-      ] : [
-        {
-          id: 1,
-          author: 'Alex Martinez',
-          content: 'Just hit 10k users with our product launch! Here are the growth tactics that worked...',
-          created_at: '2 hours ago',
-          likes: 24,
-          comments: 8
-        },
-        {
-          id: 2,
-          author: 'Emily Davis',
-          content: 'Anyone experimenting with viral loops? Would love to share notes.',
-          created_at: '4 hours ago',
-          likes: 15,
-          comments: 6
-        }
-      ];
-
-      const mockChannels: Channel[] = id === 1 ? [
-        {
-          id: 1,
-          name: 'General',
-          category: 'General'
-        },
-        {
-          id: 2,
-          name: 'Innovation',
-          category: 'General'
-        },
-        {
-          id: 3,
-          name: 'Strategy',
-          category: 'General'
-        }
-      ] : [
-        {
-          id: 1,
-          name: 'General',
-          category: 'General'
-        },
-        {
-          id: 2,
-          name: 'Growth Tactics',
-          category: 'General'
-        }
-      ];
-
-      setCircle(mockCircle);
-      setAnnouncements(mockAnnouncements);
-      setThreads(mockThreads);
-      setChannels(mockChannels);
-      setMyCircles([mockCircle]);
-    }
-  }, [circleId]);
+    Promise.all([
+      circleService.getCircleDetails(id, user.user_id),
+      circleService.getAnnouncements(id),
+      circleService.getThreads(id),
+      circleService.getChannels(id),
+    ]).then(([circleData, announcementsData, threadsData, channelsData]) => {
+      setCircle(circleData);
+      setAnnouncements(
+        announcementsData.map((a) => ({
+          id: a.id,
+          title: a.title,
+          content: a.content,
+          created_by: a.user ?? '',
+          created_at: a.announced_at ?? '',
+        }))
+      );
+      setThreads(threadsData);
+      setChannels(channelsData);
+    }).catch((err) => {
+      console.error('Failed to load circle data:', err);
+    });
+  }, [circleId, user?.user_id]);
 
   // Handle adding/removing panels
   const togglePanel = (panelType: PanelType) => {

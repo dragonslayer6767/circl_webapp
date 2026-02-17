@@ -1,21 +1,28 @@
 import { useState } from 'react';
 import { COLORS } from '../../utils/colors';
+import { userService } from '../../services/userServices';
 
 export default function ReportProblem() {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
-    // TODO: Implement API call
-    console.log('Submitting problem report:', { subject, description });
-    setIsSubmitted(true);
-    
-    setTimeout(() => {
-      setSubject('');
-      setDescription('');
-      setIsSubmitted(false);
-    }, 3000);
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      await userService.submitFeedback(subject, description);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setSubject('');
+        setDescription('');
+        setIsSubmitted(false);
+      }, 3000);
+    } catch {
+      // keep form state so user can retry
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -58,15 +65,15 @@ export default function ReportProblem() {
 
           <button
             onClick={handleSubmit}
-            disabled={!subject || !description || isSubmitted}
+            disabled={!subject || !description || isSubmitted || isLoading}
             className={`w-full py-4 rounded-xl text-white font-semibold transition-all ${
-              !subject || !description || isSubmitted ? 'bg-gray-300 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'
+              !subject || !description || isSubmitted || isLoading ? 'bg-gray-300 cursor-not-allowed' : 'shadow-lg hover:shadow-xl'
             }`}
             style={{
-              background: isSubmitted ? '#10b981' : (!subject || !description) ? undefined : `linear-gradient(90deg, ${COLORS.primary}, #0066ff)`
+              background: isSubmitted ? '#10b981' : (!subject || !description || isLoading) ? undefined : `linear-gradient(90deg, ${COLORS.primary}, #0066ff)`
             }}
           >
-            {isSubmitted ? '✓ Report Submitted!' : 'Submit Report'}
+            {isLoading ? 'Submitting...' : isSubmitted ? '✓ Report Submitted!' : 'Submit Report'}
           </button>
 
           {isSubmitted && (

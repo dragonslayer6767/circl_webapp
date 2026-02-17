@@ -1,47 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../utils/colors';
 import { Conversation, NetworkUser } from '../types/messages';
+import { useAuth } from '../hooks/useAuth';
+import { userService, NetworkContact } from '../services/userServices';
 
 export default function Messages() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchText, setSearchText] = useState('');
   const [suggestedUsers, setSuggestedUsers] = useState<NetworkUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<NetworkUser | null>(null);
+  const [networkContacts, setNetworkContacts] = useState<NetworkContact[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
-  // Mock data for network users (for search)
-  const mockNetworkUsers: NetworkUser[] = [
-    { id: '1', name: 'Sarah Chen', email: 'sarah@example.com', company: 'Tech Innovations' },
-    { id: '2', name: 'James Wilson', email: 'james@example.com', company: 'E-commerce Co' },
-    { id: '3', name: 'Priya Patel', email: 'priya@example.com', company: 'Healthcare Plus' },
-    { id: '4', name: 'Alex Rodriguez', email: 'alex@example.com', company: 'Finance Group' },
-    { id: '5', name: 'Emma Thompson', email: 'emma@example.com', company: 'EdTech Solutions' },
-  ];
-
-  // Mock conversations data
-  const mockConversations: Conversation[] = [
-    {
-      userId: '100',
-      userName: 'Ken B',
-      lastMessage: 'I have games in my pants',
-      timestamp: 'Oct 27',
-      unreadCount: 2
-    },
-    {
-      userId: '101',
-      userName: 'Sai Darsh Kandukuri',
-      lastMessage: 'Yooo',
-      timestamp: 'Sep 6',
-      unreadCount: 0
-    },
-    {
-      userId: '102',
-      userName: 'Sarah Chen',
-      lastMessage: 'Thanks for connecting! Would love to discuss that startup idea.',
-      timestamp: '2h ago',
-      unreadCount: 5
-    }
-  ];
+  useEffect(() => {
+    if (!user?.user_id) return;
+    userService.getNetwork(user.user_id).then((contacts) => {
+      setNetworkContacts(contacts);
+      // Map contacts to conversations
+      setConversations(
+        contacts.map((c) => ({
+          userId: c.user_id.toString(),
+          userName: c.name,
+          userImage: c.profile_image,
+          lastMessage: c.last_message || '',
+          timestamp: c.last_message_timestamp || '',
+          unreadCount: c.unread_count || 0,
+        }))
+      );
+    }).catch((err) => console.error('Failed to load network:', err));
+  }, [user?.user_id]);
 
   const handleSearchChange = (value: string) => {
     setSearchText(value);
@@ -49,9 +38,9 @@ export default function Messages() {
       setSuggestedUsers([]);
       setSelectedUser(null);
     } else {
-      const filtered = mockNetworkUsers.filter(user =>
-        user.name.toLowerCase().includes(value.toLowerCase())
-      );
+      const filtered = networkContacts
+        .filter((c) => c.name.toLowerCase().includes(value.toLowerCase()))
+        .map((c) => ({ id: c.user_id.toString(), name: c.name, email: c.email, profile_image: c.profile_image }));
       setSuggestedUsers(filtered);
     }
   };
@@ -96,12 +85,7 @@ export default function Messages() {
                   value={searchText}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onFocus={() => {
-                    if (searchText) {
-                      const filtered = mockNetworkUsers.filter(user =>
-                        user.name.toLowerCase().includes(searchText.toLowerCase())
-                      );
-                      setSuggestedUsers(filtered);
-                    }
+                    if (searchText) handleSearchChange(searchText);
                   }}
                   placeholder="Search for users in your network..."
                   className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
@@ -169,7 +153,7 @@ export default function Messages() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto p-6">
-        {mockConversations.length === 0 ? (
+        {conversations.length === 0 ? (
           /* Empty State */
           <div className="flex flex-col items-center justify-center py-20 px-6">
             <div 
@@ -198,7 +182,7 @@ export default function Messages() {
         ) : (
           /* Conversation List */
           <div className="space-y-3">
-            {mockConversations.map((conversation) => (
+            {conversations.map((conversation) => (
               <button
                 key={conversation.userId}
                 onClick={() => navigate(`/chat/${conversation.userId}`)}

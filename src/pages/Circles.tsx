@@ -23,29 +23,23 @@ export default function Circles() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load circles on mount from API
-    loadCircles();
-  }, []);
+    if (user?.user_id) {
+      loadCircles();
+    }
+  }, [user?.user_id]);
 
   const loadCircles = async () => {
+    if (!user?.user_id) return;
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      // Get circles user is member of
-      const myCirclesData = await circleService.getCircles();
+      const [myCirclesData, exploreData] = await Promise.all([
+        circleService.getMyCircles(user.user_id),
+        circleService.exploreCircles(user.user_id),
+      ]);
       setMyCircles(Array.isArray(myCirclesData) ? myCirclesData : []);
-
-      // Get all circles (explore view)
-      // We'll fetch paginated results for explore
-      const exploreData = await circleService.getCirclesPaginated(1, 50);
-      const allCircles = exploreData.results || [];
-      
-      // Filter to show circles user is NOT a member of in explore tab
-      const myCircleIds = (Array.isArray(myCirclesData) ? myCirclesData : []).map(c => c.id);
-      const nonMemberCircles = allCircles.filter(c => !myCircleIds.includes(c.id));
-      
-      setExploreCircles(nonMemberCircles);
+      setExploreCircles(Array.isArray(exploreData) ? exploreData : []);
     } catch (error) {
       console.error('Failed to load circles:', error);
       setErrorMessage('Failed to load circles. Please try again.');
@@ -58,16 +52,16 @@ export default function Circles() {
     if (!user?.user_id) return;
 
     try {
-      // Create the circle payload matching the circleService API interface
-      const payload = {
+      await circleService.createCircle({
+        user_id: user.user_id,
         name: data.name,
         description: data.description,
-        is_public: !data.is_private, // API uses is_public, not is_private
-      };
-
-      await circleService.createCircle(payload);
-      
-      // Reload circles after creating
+        industry: data.industry,
+        join_type: data.join_type,
+        channels: data.channels,
+        is_private: data.is_private,
+        access_code: data.access_code,
+      });
       await loadCircles();
       setShowCreateModal(false);
     } catch (error) {
@@ -89,12 +83,8 @@ export default function Circles() {
     }
 
     try {
-      await circleService.joinCircle(circle.id);
-      
-      // Reload circles after joining
+      await circleService.joinCircle(circle.id, user.user_id);
       await loadCircles();
-      
-      // Navigate to circle after joining
       navigate(`/circles/${circle.id}`);
     } catch (error) {
       console.error('Failed to join circle:', error);
@@ -107,7 +97,7 @@ export default function Circles() {
     if (!user?.user_id || !circlePendingJoin || !accessCodeInput.trim()) return;
 
     try {
-      await circleService.joinCircle(circlePendingJoin.id, accessCodeInput.trim());
+      await circleService.joinCircle(circlePendingJoin.id, user.user_id);
       
       // Reload circles after joining
       await loadCircles();

@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { COLORS } from '../utils/colors';
 import ProfileModal from '../components/networking/ProfileModal';
 import { NetworkUser } from '../types/network';
+import { useAuth } from '../hooks/useAuth';
+import { userService } from '../services/userServices';
 
 interface ChatMessage {
   id: string;
@@ -34,6 +36,7 @@ export default function ChatView({ user: propUser, isOpen = true, onClose }: Cha
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user: currentUser } = useAuth();
   
   const [messageText, setMessageText] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -183,33 +186,24 @@ export default function ChatView({ user: propUser, isOpen = true, onClose }: Cha
     return '📎';
   };
 
-  // Mock messages
+  // Load DM thread from API
   useEffect(() => {
-    const mockMessages: ChatMessage[] = [
-      {
-        id: '1',
-        text: 'Hey! How are you doing?',
-        timestamp: new Date(Date.now() - 86400000),
-        isFromCurrentUser: false,
-        isRead: true
-      },
-      {
-        id: '2',
-        text: 'I\'m doing great! Just working on some exciting projects',
-        timestamp: new Date(Date.now() - 86340000),
-        isFromCurrentUser: true,
-        isRead: true
-      },
-      {
-        id: '3',
-        text: userId === '100' ? 'I have games in my pants' : 'Yooo',
-        timestamp: new Date(Date.now() - 3600000),
-        isFromCurrentUser: false,
-        isRead: true
-      }
-    ];
-    setMessages(mockMessages);
-  }, [userId]);
+    if (!userId) return;
+    const recipientId = parseInt(userId);
+    userService.getMessages(recipientId)
+      .then((dms) => {
+        const mapped: ChatMessage[] = dms.map((dm) => ({
+          id: dm.id.toString(),
+          text: dm.message,
+          timestamp: new Date(dm.timestamp),
+          isFromCurrentUser: dm.sender_id === currentUser?.user_id,
+          isRead: dm.is_read,
+        }));
+        setMessages(mapped);
+        userService.markMessagesRead(recipientId).catch(() => {});
+      })
+      .catch(() => {});
+  }, [userId, currentUser?.user_id]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -219,57 +213,48 @@ export default function ChatView({ user: propUser, isOpen = true, onClose }: Cha
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!messageText.trim() && selectedFiles.length === 0) return;
 
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text: messageText,
-      timestamp: new Date(),
-      isFromCurrentUser: true,
-      isRead: false
-    };
+    const recipientId = parseInt(chatUser.id);
+    const text = messageText.trim();
 
-    // Handle file attachments
-    if (selectedFiles.length > 0) {
-      const file = selectedFiles[0]; // For now, send one file at a time
+    // Handle file-only messages locally (media upload endpoint separate)
+    if (selectedFiles.length > 0 && !text) {
+      const file = selectedFiles[0];
       const isImage = file.type.startsWith('image/');
-      
-      if (isImage) {
-        // Create preview URL for images
-        newMessage.imageUrl = URL.createObjectURL(file);
-      } else {
-        // For other files, store metadata
-        newMessage.fileUrl = URL.createObjectURL(file);
-        newMessage.fileName = file.name;
-        newMessage.fileSize = file.size;
-      }
+      const localMsg: ChatMessage = {
+        id: Date.now().toString(),
+        text: '',
+        timestamp: new Date(),
+        isFromCurrentUser: true,
+        isRead: false,
+        imageUrl: isImage ? URL.createObjectURL(file) : undefined,
+        fileUrl: !isImage ? URL.createObjectURL(file) : undefined,
+        fileName: !isImage ? file.name : undefined,
+        fileSize: !isImage ? file.size : undefined,
+      };
+      setMessages((prev) => [...prev, localMsg]);
+      setSelectedFiles([]);
+      return;
     }
 
-    setMessages([...messages, newMessage]);
     setMessageText('');
     setSelectedFiles([]);
 
-    // Simulate read receipt after 2 seconds
-    setTimeout(() => {
-      setMessages(prev => prev.map(msg => 
-        msg.id === newMessage.id ? { ...msg, isRead: true } : msg
-      ));
-    }, 2000);
-
-    // Simulate typing indicator
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const reply: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        text: 'Thanks for your message!',
-        timestamp: new Date(),
-        isFromCurrentUser: false,
-        isRead: true
+    try {
+      const dm = await userService.sendMessage(recipientId, text);
+      const newMessage: ChatMessage = {
+        id: dm.id.toString(),
+        text: dm.message,
+        timestamp: new Date(dm.timestamp),
+        isFromCurrentUser: true,
+        isRead: false,
       };
-      setMessages(prev => [...prev, reply]);
-    }, 2000);
+      setMessages((prev) => [...prev, newMessage]);
+    } catch {
+      setMessageText(text); // restore on failure
+    }
   };
 
   const formatDate = (date: Date) => {

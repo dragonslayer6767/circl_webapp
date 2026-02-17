@@ -1,14 +1,22 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { userService } from '../../services/userServices';
 
 export default function DeleteAccount() {
+  const navigate = useNavigate();
   const [confirmText, setConfirmText] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleDelete = () => {
-    if (confirmText === 'DELETE') {
-      // TODO: Implement API call
-      console.log('Deleting account');
-      // Navigate to login or show success message
+  const handleDelete = async () => {
+    if (confirmText !== 'DELETE') return;
+    setIsLoading(true);
+    try {
+      await userService.requestDeleteAccount();
+      localStorage.clear();
+      navigate('/login');
+    } catch {
+      setIsLoading(false);
     }
   };
 
@@ -96,14 +104,14 @@ export default function DeleteAccount() {
               </button>
               <button
                 onClick={handleDelete}
-                disabled={confirmText !== 'DELETE'}
+                disabled={confirmText !== 'DELETE' || isLoading}
                 className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
-                  confirmText === 'DELETE'
+                  confirmText === 'DELETE' && !isLoading
                     ? 'bg-red-600 text-white hover:bg-red-700'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                Delete Forever
+                {isLoading ? 'Deleting...' : 'Delete Forever'}
               </button>
             </div>
           </div>

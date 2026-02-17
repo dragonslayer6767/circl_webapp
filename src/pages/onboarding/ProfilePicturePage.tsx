@@ -2,7 +2,8 @@ import { useState, useRef, ChangeEvent, DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
-import { useNotification } from '../../context/NotificationContext';
+import { userService } from '../../services/userServices';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
 const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
@@ -17,31 +18,28 @@ const ALLOWED_IMAGE_TYPES = [
 export default function ProfilePicturePage() {
   const navigate = useNavigate();
   const { data, updateData, nextStep } = useOnboarding();
-  const { addNotification } = useNotification();
 
   const [selectedImage, setSelectedImage] = useState<string | null>(data?.profilePicture || null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateAndProcessFile = (file: File) => {
-    // Check file type
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      addNotification('Please select a valid image file (JPG, PNG, GIF, WebP, SVG, BMP)', 'error');
+      showErrorToast('Please select a valid image file (JPG, PNG, GIF, WebP, SVG, BMP)');
       return false;
     }
 
-    // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      addNotification('Image must be less than 5MB', 'error');
+      showErrorToast('Image must be less than 5MB');
       return false;
     }
 
-    // Create preview
+    setSelectedFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const imageData = e.target?.result as string;
-      setSelectedImage(imageData);
+      setSelectedImage(e.target?.result as string);
     };
     reader.readAsDataURL(file);
     return true;
@@ -86,27 +84,20 @@ export default function ProfilePicturePage() {
   };
 
   const handleUpload = async () => {
-    if (!selectedImage) {
-      addNotification('Please select an image first', 'error');
+    if (!selectedFile) {
+      showErrorToast('Please select an image first');
       return;
     }
 
     setIsUploading(true);
-
     try {
-      // TODO: Implement actual image upload to backend
-      // For now, just store the base64 string locally
+      await userService.uploadProfileImage(selectedFile);
       updateData({ profilePicture: selectedImage });
-      
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      addNotification('Profile picture uploaded!', 'success');
+      showSuccessToast('Profile picture uploaded!');
       nextStep();
       navigate('/onboarding/personal-info');
-    } catch (error) {
-      addNotification('Failed to upload image', 'error');
-      console.error('Upload error:', error);
+    } catch {
+      showErrorToast('Failed to upload image. Please try again.');
     } finally {
       setIsUploading(false);
     }

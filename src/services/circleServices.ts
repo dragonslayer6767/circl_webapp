@@ -1,168 +1,195 @@
 import api from './authService';
+import { Circle, CircleMember, Announcement, CreateCircleData } from '../types/circle';
 
-// ============ TypeScript Interfaces ============
+// ============ Response Types ============
 
-export interface Circle {
+export interface ApiChannel {
   id: number;
   name: string;
-  description: string;
-  image?: string;
-  created_by: number;
+  category?: string;
+}
+
+export interface ApiThread {
+  id: number;
+  author: string;
+  author_id?: number;
+  content: string;
   created_at: string;
-  updated_at: string;
-  is_public: boolean;
-  member_count: number;
-  is_member?: boolean;
+  likes: number;
+  comments: number;
+  liked_by_user?: boolean;
 }
 
-export interface CircleCreatePayload {
-  name: string;
-  description: string;
-  image?: File;
-  is_public: boolean;
-}
-
-export interface CircleUpdatePayload {
-  name?: string;
-  description?: string;
-  image?: File;
-  is_public?: boolean;
-}
-
-export interface CircleMember {
+export interface ApiMessage {
   id: number;
+  sender_id: number;
+  sender_name: string;
+  sender_avatar?: string;
+  content: string;
+  created_at: string;
+}
+
+export interface CreateThreadPayload {
+  circle_id: number;
   user_id: number;
-  circle_id: number;
-  joined_at: string;
-  role: 'admin' | 'moderator' | 'member';
-  user: {
-    user_id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    profile_image?: string;
-  };
+  content: string;
+  channel_id?: number;
 }
 
-export interface InviteLink {
-  id: number;
-  circle_id: number;
-  token: string;
-  code: string;
-  created_at: string;
-  expires_at?: string;
-  max_uses?: number;
-  uses: number;
-  is_active: boolean;
+export interface CreateCirclePayload {
+  user_id: number;
+  name: string;
+  industry?: string;
+  description: string;
+  join_type?: string;
+  channels?: string[];
+  category?: string;
+  is_private?: boolean;
+  access_code?: string;
 }
 
 // ============ Circle Service ============
 
 export const circleService = {
-  // Create a new circle
-  createCircle: async (payload: CircleCreatePayload): Promise<Circle> => {
-    const formData = new FormData();
-    formData.append('name', payload.name);
-    formData.append('description', payload.description);
-    formData.append('is_public', payload.is_public.toString());
-    
-    if (payload.image) {
-      formData.append('image', payload.image);
-    }
+  // My circles
+  getMyCircles: async (userId: number): Promise<Circle[]> => {
+    const response = await api.get(`/circles/my_circles/${userId}/`);
+    return response.data;
+  },
 
-    const response = await api.post('/api/circles/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+  // Explore circles
+  exploreCircles: async (userId: number): Promise<Circle[]> => {
+    const response = await api.get(`/circles/explore_circles/${userId}/`);
+    return response.data;
+  },
+
+  // Join a circle
+  joinCircle: async (circleId: number, userId: number): Promise<{ message: string }> => {
+    const response = await api.post('/circles/join_circle/', { circle_id: circleId, user_id: userId });
+    return response.data;
+  },
+
+  // Leave a circle
+  leaveCircle: async (circleId: number, userId: number): Promise<{ message: string }> => {
+    const response = await api.post('/circles/leave_circle/', { circle_id: circleId, user_id: userId });
+    return response.data;
+  },
+
+  // Create a circle with channels
+  createCircle: async (payload: CreateCirclePayload): Promise<Circle> => {
+    const response = await api.post('/circles/create_with_channels/', payload);
+    return response.data;
+  },
+
+  // Delete a circle (admin only)
+  deleteCircle: async (circleId: number, userId: number): Promise<void> => {
+    await api.post('/circles/delete_circle/', { circle_id: circleId, user_id: userId });
+  },
+
+  // Get full circle details
+  getCircleDetails: async (circleId: number, userId: number): Promise<Circle> => {
+    const response = await api.get('/circles/get_circle_details/', {
+      params: { circle_id: circleId, user_id: userId },
     });
-    return response.data;
-  },
-
-  // Get all circles user is member of
-  getCircles: async (): Promise<Circle[]> => {
-    const response = await api.get('/api/circles/');
-    return response.data;
-  },
-
-  // Get paginated circles
-  getCirclesPaginated: async (page: number = 1, pageSize: number = 20): Promise<{ count: number; results: Circle[] }> => {
-    const response = await api.get('/api/circles/', {
-      params: { page, page_size: pageSize },
-    });
-    return response.data;
-  },
-
-  // Get circle details
-  getCircle: async (circleId: number): Promise<Circle> => {
-    const response = await api.get(`/api/circles/${circleId}/`);
-    return response.data;
-  },
-
-  // Update circle
-  updateCircle: async (circleId: number, payload: CircleUpdatePayload): Promise<Circle> => {
-    const formData = new FormData();
-    
-    if (payload.name) formData.append('name', payload.name);
-    if (payload.description) formData.append('description', payload.description);
-    if (payload.is_public !== undefined) formData.append('is_public', payload.is_public.toString());
-    if (payload.image) formData.append('image', payload.image);
-
-    const response = await api.put(`/api/circles/${circleId}/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  },
-
-  // Delete circle
-  deleteCircle: async (circleId: number): Promise<void> => {
-    await api.delete(`/api/circles/${circleId}/`);
-  },
-
-  // Join circle with access code
-  joinCircle: async (circleId: number, accessCode?: string): Promise<{ message: string }> => {
-    const response = await api.post(`/api/circles/${circleId}/join/`, {
-      access_code: accessCode,
-    });
-    return response.data;
-  },
-
-  // Leave circle
-  leaveCircle: async (circleId: number): Promise<{ message: string }> => {
-    const response = await api.post(`/api/circles/${circleId}/leave/`);
     return response.data;
   },
 
   // Get circle members
-  getCircleMembers: async (circleId: number, page: number = 1, pageSize: number = 50): Promise<{ count: number; results: CircleMember[] }> => {
-    const response = await api.get(`/api/circles/${circleId}/members/`, {
-      params: { page, page_size: pageSize },
+  getMembers: async (circleId: number): Promise<CircleMember[]> => {
+    const response = await api.get(`/circles/members/${circleId}/`);
+    return response.data;
+  },
+
+  // Get channels in a circle
+  getChannels: async (circleId: number): Promise<ApiChannel[]> => {
+    const response = await api.get(`/circles/get_channels/${circleId}/`);
+    return response.data;
+  },
+
+  // Get announcements
+  getAnnouncements: async (circleId: number): Promise<Announcement[]> => {
+    const response = await api.get(`/circles/get_announcements/${circleId}/`);
+    return response.data;
+  },
+
+  // Post an announcement (admin)
+  postAnnouncement: async (circleId: number, title: string, content: string): Promise<Announcement> => {
+    const response = await api.post('/circles/post_announcement/', { circle_id: circleId, title, content });
+    return response.data;
+  },
+
+  // Delete an announcement
+  deleteAnnouncement: async (announcementId: number): Promise<void> => {
+    await api.delete(`/circles/announcements/delete/${announcementId}/`);
+  },
+
+  // Get threads
+  getThreads: async (circleId: number): Promise<ApiThread[]> => {
+    const response = await api.get(`/circles/get_threads/${circleId}/`);
+    return response.data;
+  },
+
+  // Create a thread
+  createThread: async (payload: CreateThreadPayload): Promise<ApiThread> => {
+    const response = await api.post('/circles/create_thread/', payload);
+    return response.data;
+  },
+
+  // Toggle like on a thread
+  toggleLike: async (threadId: number, userId: number): Promise<void> => {
+    await api.post('/circles/toggle_like/', { thread_id: threadId, user_id: userId });
+  },
+
+  // Get comments on a thread
+  getComments: async (threadId: number): Promise<unknown[]> => {
+    const response = await api.get(`/circles/get_comments/${threadId}/`);
+    return response.data;
+  },
+
+  // Post a comment on a thread
+  postComment: async (threadId: number, userId: number, content: string): Promise<void> => {
+    await api.post('/circles/post_comment/', { thread_id: threadId, user_id: userId, content });
+  },
+
+  // Get channel messages
+  getMessages: async (channelId: number): Promise<ApiMessage[]> => {
+    const response = await api.get(`/circles/get_messages/${channelId}/`);
+    return response.data;
+  },
+
+  // Send a channel message
+  sendMessage: async (channelId: number, content: string): Promise<ApiMessage> => {
+    const response = await api.post('/circles/send_message/', { channel_id: channelId, content });
+    return response.data;
+  },
+
+  // Create an invite link
+  createInviteLink: async (circleId: number): Promise<{ token: string; url: string }> => {
+    const response = await api.post(`/circles/create_invite_link/${circleId}/`);
+    return response.data;
+  },
+
+  // Preview an invite
+  getInvitePreview: async (token: string): Promise<Circle> => {
+    const response = await api.get(`/circles/invite_preview/${token}/`);
+    return response.data;
+  },
+
+  // Accept invite
+  resolveInvite: async (token: string): Promise<{ message: string }> => {
+    const response = await api.post(`/circles/resolve_invite/${token}/`);
+    return response.data;
+  },
+
+  // Upload circle image
+  uploadCircleImage: async (circleId: number, file: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('circle_id', circleId.toString());
+    await api.post('/circles/upload_circle_image/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
-  },
-
-  // Generate invite link
-  generateInviteLink: async (circleId: number): Promise<InviteLink> => {
-    const response = await api.post(`/api/circles/${circleId}/invite/`);
-    return response.data;
-  },
-
-  // Accept invite link (public endpoint)
-  acceptInvite: async (token: string): Promise<{ circle: Circle; message: string }> => {
-    const response = await api.post(`/api/invite/${token}/accept/`);
-    return response.data;
-  },
-
-  // Get circle image URL
-  getCircleImageUrl: (circleImage: string | undefined): string | undefined => {
-    if (!circleImage) return undefined;
-
-    if (circleImage.startsWith('http://') || circleImage.startsWith('https://')) {
-      return circleImage;
-    }
-
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://circlapp.online';
-    return `${baseURL}${circleImage}`;
   },
 };
+
+export type { CreateCircleData };

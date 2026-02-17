@@ -2,7 +2,8 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
-import { useNotification } from '../../context/NotificationContext';
+import { authService } from '../../services/authService';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
 const usageInterestOptions = [
   "Sell a Skill", "Make Investments", "Share Knowledge", "Be Part of the Community",
@@ -62,7 +63,6 @@ const industryCategories: [string, string[]][] = [
 export default function SignupFormPage() {
   const navigate = useNavigate();
   const { data, updateData, nextStep } = useOnboarding();
-  const { addNotification } = useNotification();
 
   const [firstName, setFirstName] = useState(data?.firstName || '');
   const [lastName, setLastName] = useState(data?.lastName || '');
@@ -165,19 +165,16 @@ export default function SignupFormPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!isFormValid()) {
-      addNotification('Please fill out all fields correctly before continuing.', 'error');
+      showErrorToast('Please fill out all fields correctly before continuing.');
       return;
     }
 
     setIsSubmitting(true);
+    try {
+      const userData = await authService.register(firstName, lastName, email, password);
 
-    // Mock registration - no API call for testing
-    setTimeout(() => {
-      const mockUserId = Date.now(); // Generate mock user ID
-
-      // Store user_id for subsequent requests
       updateData({
         firstName,
         lastName,
@@ -187,19 +184,25 @@ export default function SignupFormPage() {
         confirmPassword,
         selectedUsageInterest,
         selectedIndustryInterest,
-        userId: mockUserId
+        userId: userData.user_id,
       });
 
-      // Store for tutorial system
       localStorage.setItem('selected_usage_interest', selectedUsageInterest);
       localStorage.setItem('selected_industry_interest', selectedIndustryInterest);
-      localStorage.setItem('user_id', mockUserId.toString());
 
-      addNotification('Account created successfully!', 'success');
-      setIsSubmitting(false);
+      showSuccessToast('Account created successfully!');
       nextStep();
       navigate('/onboarding/profile-picture');
-    }, 500);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { email?: string[]; detail?: string } } };
+      const message =
+        err.response?.data?.email?.[0] ||
+        err.response?.data?.detail ||
+        'Registration failed. Please try again.';
+      showErrorToast(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const allIndustries = industryCategories.flatMap(([_, industries]) => industries).sort();

@@ -1,28 +1,25 @@
 import { useState, useEffect } from 'react';
 import { COLORS } from '../../utils/colors';
-
-interface BlockedUser {
-  id: number;
-  name: string;
-  company?: string;
-}
+import { userService, BlockedUser } from '../../services/userServices';
 
 export default function BlockedUsers() {
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    // TODO: Fetch blocked users from API
-    // Mock data for now
-    setBlockedUsers([]);
+    userService.getBlockedUsers().then(setBlockedUsers).catch(() => {});
   }, []);
 
-  const handleUnblock = (userId: number) => {
-    // TODO: Implement API call
-    console.log('Unblocking user:', userId);
-    setBlockedUsers(blockedUsers.filter(user => user.id !== userId));
-    setMessage('User unblocked successfully');
-    setTimeout(() => setMessage(''), 3000);
+  const handleUnblock = async (userId: number) => {
+    try {
+      await userService.unblockUser(userId);
+      setBlockedUsers((prev) => prev.filter((u) => u.id !== userId));
+      setMessage('User unblocked successfully');
+      setTimeout(() => setMessage(''), 3000);
+    } catch {
+      setMessage('Failed to unblock user. Please try again.');
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   return (

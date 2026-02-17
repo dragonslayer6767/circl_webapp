@@ -1,24 +1,30 @@
 import { useState } from 'react';
 import { COLORS } from '../../utils/colors';
+import { userService } from '../../services/userServices';
 
 export default function BecomeMentor() {
   const [name, setName] = useState('');
   const [industry, setIndustry] = useState('');
   const [reason, setReason] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
-    // TODO: Implement API call
-    console.log('Submitting mentor application:', { name, industry, reason });
-    setIsSubmitted(true);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setName('');
-      setIndustry('');
-      setReason('');
-      setIsSubmitted(false);
-    }, 3000);
+    setIsLoading(true);
+    try {
+      await userService.applyMentor(name, industry, reason);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setName('');
+        setIndustry('');
+        setReason('');
+        setIsSubmitted(false);
+      }, 3000);
+    } catch {
+      // keep form state so user can retry
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -85,21 +91,23 @@ export default function BecomeMentor() {
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
-            disabled={!name || !industry || !reason || isSubmitted}
+            disabled={!name || !industry || !reason || isSubmitted || isLoading}
             className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl text-white font-semibold transition-all shadow-lg ${
-              !name || !industry || !reason || isSubmitted
+              !name || !industry || !reason || isSubmitted || isLoading
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'hover:shadow-xl hover:scale-[1.02]'
             }`}
             style={{
               background: isSubmitted
                 ? 'linear-gradient(90deg, #10b981, #059669)'
-                : (!name || !industry || !reason)
+                : (!name || !industry || !reason || isLoading)
                 ? undefined
                 : `linear-gradient(90deg, ${COLORS.primary}, #0066ff)`
             }}
           >
-            {isSubmitted ? (
+            {isLoading ? (
+              <span>Submitting...</span>
+            ) : isSubmitted ? (
               <>
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
