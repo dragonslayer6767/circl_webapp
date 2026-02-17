@@ -93,23 +93,17 @@ export const authService = {
 
   /**
    * Logout user and clear all stored data
+   * Backend uses token auth — no server-side session to invalidate
    */
-  async logout(): Promise<void> {
-    try {
-      // Call backend logout endpoint (if it exists)
-      await api.post('/logout/');
-    } catch (error) {
-      console.error('Logout API error:', error);
-    } finally {
-      // Clear all stored data regardless of API response
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_id');
-      localStorage.removeItem('user_email');
-      localStorage.removeItem('user_fullname');
-      localStorage.setItem('isLoggedIn', 'false');
-      
-      console.log('✅ Logout successful');
-    }
+  logout(): void {
+    // Clear all stored data
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_fullname');
+    localStorage.setItem('isLoggedIn', 'false');
+    
+    console.log('✅ Logout successful');
   },
 
   /**

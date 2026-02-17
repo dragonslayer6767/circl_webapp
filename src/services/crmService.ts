@@ -100,7 +100,7 @@ export const crmService = {
    */
   addNote: async (contactId: string, noteData: AddNoteData): Promise<ContactNote> => {
     try {
-      const response = await api.post(`/crm/contacts/${contactId}/notes/`, noteData);
+      const response = await api.post(`/crm/contacts/${contactId}/add_note/`, noteData);
       return response.data;
     } catch (error) {
       console.error('Error adding note:', error);
