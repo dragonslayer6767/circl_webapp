@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { COLORS } from '../../../utils/colors';
+import api from '../../../services/authService';
 
 interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   circleId: number;
   circleName: string;
+  userId: number;
   onEventCreated: () => void;
 }
 
@@ -14,7 +16,7 @@ const EVENT_TYPES = ['Workshop', 'Speaker', 'Social', 'Meeting', 'Conference'];
 export default function CreateEventModal({
   isOpen,
   onClose,
-  circleId: _circleId,
+  circleId,
   circleName,
   onEventCreated
 }: CreateEventModalProps) {
@@ -26,6 +28,7 @@ export default function CreateEventModal({
   const [endTime, setEndTime] = useState('11:00');
   const [points, setPoints] = useState('10');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -33,30 +36,33 @@ export default function CreateEventModal({
     if (!eventName.trim()) return;
 
     setIsSubmitting(true);
+    setError(null);
 
-    // TODO: Replace with actual API call
-    // const response = await fetch('https://circlapp.online/api/circles/create_event/', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     circle_id: circleId,
-    //     title: eventName.trim(),
-    //     event_type: eventType,
-    //     description: description.trim(),
-    //     date: selectedDate,
-    //     start_time: startTime + ':00',
-    //     end_time: endTime + ':00',
-    //     points: parseInt(points) || 10
-    //   })
-    // });
+    try {
+      const payload = {
+        title: eventName.trim(),
+        description: description.trim(),
+        event_type: eventType.toLowerCase(),
+        points: parseInt(points) || 0,
+        revenue: 0,
+        date: selectedDate,
+        start_time: startTime + ':00',
+        end_time: endTime + ':00',
+        circle_id: circleId,
+      };
+      await api.post('circles/create_event/', payload);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
       resetForm();
       onEventCreated();
       onClose();
-    }, 500);
+    } catch (err: any) {
+      console.error('Failed to create event:', err);
+      const data = err?.response?.data;
+      const detail = data?.detail || data?.error || (typeof data === 'string' ? data : JSON.stringify(data)) || err?.message || 'Failed to create event';
+      setError(`Error ${err?.response?.status ?? ''}: ${detail}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -67,6 +73,7 @@ export default function CreateEventModal({
     setStartTime('10:00');
     setEndTime('11:00');
     setPoints('10');
+    setError(null);
   };
 
   const eventTypeColor = (type: string) => {
@@ -83,14 +90,14 @@ export default function CreateEventModal({
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 z-50"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div 
+        <div
           className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
@@ -114,6 +121,12 @@ export default function CreateEventModal({
 
           {/* Content */}
           <div className="p-6 space-y-6">
+            {error && (
+              <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+                {error}
+              </div>
+            )}
+
             {/* Event Name */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -182,7 +195,6 @@ export default function CreateEventModal({
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2"
                 style={{ ['--tw-ring-color' as any]: COLORS.primary }}
-                min={new Date().toISOString().split('T')[0]}
               />
             </div>
 

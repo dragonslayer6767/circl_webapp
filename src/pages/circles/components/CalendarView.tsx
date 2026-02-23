@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { COLORS } from '../../../utils/colors';
 import CreateEventModal from './CreateEventModal';
+import api from '../../../services/authService';
 
 interface CalendarEvent {
   id: number;
@@ -19,80 +20,85 @@ interface CalendarViewProps {
   circleId: number;
   circleName: string;
   isModerator: boolean;
+  userId: number;
   isPanel?: boolean;
 }
 
-export default function CalendarView({ circleId, circleName, isModerator, isPanel = false }: CalendarViewProps) {
+export default function CalendarView({ circleId, circleName, isModerator, userId, isPanel = false }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [checkedInIds, setCheckedInIds] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedEventId, setExpandedEventId] = useState<number | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
-  // Mock event data
-  const mockEvents: CalendarEvent[] = [
-    {
-      id: 1,
-      title: 'Monthly Networking Mixer',
-      description: 'Join us for our monthly networking event to connect with fellow members and share ideas.',
-      event_type: 'social',
-      date: '2025-12-23',
-      start_time: '18:00:00',
-      end_time: '20:00:00',
-      points: 10,
-      revenue: 0,
-      circle_id: circleId
-    },
-    {
-      id: 2,
-      title: 'Workshop: Business Growth Strategies',
-      description: 'Learn effective strategies to grow your business in 2026.',
-      event_type: 'workshop',
-      date: '2025-12-24',
-      start_time: '14:00:00',
-      end_time: '16:00:00',
-      points: 15,
-      revenue: 50,
-      circle_id: circleId
-    },
-    {
-      id: 3,
-      title: 'Guest Speaker: Tech Innovation',
-      description: 'Hear from industry leaders about the latest in tech innovation.',
-      event_type: 'speaker',
-      date: '2025-12-28',
-      start_time: '10:00:00',
-      end_time: '12:00:00',
-      points: 20,
-      revenue: 75,
-      circle_id: circleId
-    },
-    {
-      id: 4,
-      title: 'Year End Planning Meeting',
-      description: 'Strategic planning session for Q1 2026.',
-      event_type: 'meeting',
-      date: '2025-12-30',
-      start_time: '15:00:00',
-      end_time: '17:00:00',
-      points: 10,
-      revenue: 0,
-      circle_id: circleId
+  useEffect(() => {
+    fetchEvents();
+    fetchCheckins();
+  }, [circleId]);
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/circles/get_events/', {
+        params: { circle_id: circleId },
+      });
+      setEvents(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+      setEvents([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const fetchCheckins = async () => {
+    try {
+      const response = await api.get('/circles/get_user_checkins/', {
+        params: { user_id: userId },
+      });
+      setCheckedInIds(response.data?.checked_in_event_ids ?? []);
+    } catch (err) {
+      console.error('Failed to fetch checkins:', err);
+    }
+  };
+
+  const handleCheckIn = async (eventId: number) => {
+    try {
+      await api.post('/circles/checkin_event/', { user: userId, event: eventId });
+      setCheckedInIds((prev) => [...prev, eventId]);
+    } catch (err) {
+      console.error('Failed to check in:', err);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: number) => {
+    try {
+      await api.delete(`/circles/delete_event/${eventId}/`, {
+        params: { user_id: userId },
+      });
+      setEvents((prev) => prev.filter((e) => e.id !== eventId));
+      setDeleteConfirmId(null);
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+    }
+  };
 
   // Get events for selected date
   const getEventsForDate = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
-    return mockEvents.filter(event => event.date === dateStr);
+    return events.filter((event) => event.date === dateStr);
   };
 
   // Check if date has events
   const hasEvents = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
-    return mockEvents.some(event => event.date === dateStr);
+    return events.some((event) => event.date === dateStr);
   };
 
-  // Calendar navigation
   const previousMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
@@ -101,51 +107,32 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  // Generate calendar days
   const generateCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-    
-    const days = [];
-    
-    // Empty cells for days before month starts
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    // Days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(new Date(year, month, day));
-    }
-    
+    const days: (Date | null)[] = [];
+
+    for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
+    for (let day = 1; day <= lastDay.getDate(); day++) days.push(new Date(year, month, day));
+
     return days;
   };
 
   const calendarDays = generateCalendarDays();
-  const eventsToShow = showAllEvents ? mockEvents : getEventsForDate(selectedDate);
+  const eventsToShow = showAllEvents ? events : getEventsForDate(selectedDate);
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
   const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-  const isSameDay = (date1: Date, date2: Date) => {
-    return date1.getDate() === date2.getDate() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getFullYear() === date2.getFullYear();
-  };
+  const isSameDay = (date1: Date, date2: Date) =>
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear();
 
-  const isToday = (date: Date) => {
-    return isSameDay(date, new Date());
-  };
+  const isToday = (date: Date) => isSameDay(date, new Date());
 
   const formatTime = (timeString: string) => {
     const [hours, minutes] = timeString.split(':');
@@ -157,11 +144,11 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
 
   const getEventTypeColor = (type: string) => {
     const colors: { [key: string]: string } = {
-      workshop: '#8B5CF6',
-      speaker: '#EC4899',
-      social: '#10B981',
-      meeting: '#F59E0B',
-      conference: '#3B82F6'
+      workshop: COLORS.primary,
+      speaker: '#9333EA',
+      social: '#F97316',
+      meeting: '#3B82F6',
+      conference: '#EF4444',
     };
     return colors[type.toLowerCase()] || COLORS.primary;
   };
@@ -204,7 +191,7 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
   };
 
   return (
-    <div className={isPanel ? "w-full" : "max-w-6xl mx-auto px-5 pb-24 pt-4"}>
+    <div className={isPanel ? 'w-full' : 'max-w-6xl mx-auto px-5 pb-24 pt-4'}>
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
@@ -220,30 +207,25 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
             </svg>
+            <span>Add Event</span>
           </button>
         )}
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-5" style={{ minWidth: isPanel ? '350px' : undefined }}>
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-5">
         {/* Month Navigation */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-gray-900">
             {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </h2>
           <div className="flex items-center space-x-1">
-            <button
-              onClick={previousMonth}
-              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-            >
+            <button onClick={previousMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <button
-              onClick={nextMonth}
-              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-            >
+            <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
               <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -263,9 +245,7 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-1">
           {calendarDays.map((day, index) => {
-            if (!day) {
-              return <div key={`empty-${index}`} className="h-9" />;
-            }
+            if (!day) return <div key={`empty-${index}`} className="h-9" />;
 
             const isSelected = isSameDay(day, selectedDate);
             const hasEvent = hasEvents(day);
@@ -274,13 +254,8 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
             return (
               <button
                 key={index}
-                onClick={() => {
-                  setSelectedDate(day);
-                  setShowAllEvents(false);
-                }}
-                className={`
-                  h-9 rounded-lg flex flex-col items-center justify-center text-sm font-medium
-                  transition-all relative
+                onClick={() => { setSelectedDate(day); setShowAllEvents(false); }}
+                className={`h-9 rounded-lg flex flex-col items-center justify-center text-sm font-medium transition-all relative
                   ${isSelected ? 'text-white shadow-md' : 'text-gray-900 hover:bg-gray-50'}
                   ${isCurrentDay && !isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}
                 `}
@@ -288,7 +263,7 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
               >
                 {day.getDate()}
                 {hasEvent && (
-                  <div 
+                  <div
                     className={`w-1 h-1 rounded-full mt-0.5 ${isSelected ? 'bg-white' : ''}`}
                     style={!isSelected ? { backgroundColor: COLORS.primary } : {}}
                   />
@@ -303,10 +278,9 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900">
-            {showAllEvents 
-              ? 'All Events' 
-              : `Events for ${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`
-            }
+            {showAllEvents
+              ? 'All Events'
+              : `Events for ${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`}
           </h3>
           <button
             onClick={() => setShowAllEvents(!showAllEvents)}
@@ -317,81 +291,138 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
           </button>
         </div>
 
-        {eventsToShow.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <svg className="animate-spin h-6 w-6" style={{ color: COLORS.primary }} viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          </div>
+        ) : eventsToShow.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8">
-            <div 
-              className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-              style={{ backgroundColor: `${COLORS.primary}10` }}
-            >
-              <svg 
-                className="w-6 h-6"
-                style={{ color: COLORS.primary }}
-                fill="currentColor" 
-                viewBox="0 0 20 20"
-              >
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: `${COLORS.primary}10` }}>
+              <svg className="w-6 h-6" style={{ color: COLORS.primary }} fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
               </svg>
             </div>
             <h4 className="text-base font-semibold text-gray-900 mb-1">No events for this date</h4>
-            <p className="text-xs text-gray-500">Tap the + button to create an event</p>
+            {isModerator && <p className="text-xs text-gray-500">Tap the + button to create an event</p>}
           </div>
         ) : (
           <div className="space-y-2.5">
-            {eventsToShow.map((event) => (
-              <div
-                key={event.id}
-                className="rounded-lg p-3 border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
-              >
-                <div className="flex items-start space-x-2.5">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
-                    style={{ backgroundColor: getEventTypeColor(event.event_type) }}
+            {eventsToShow.map((event) => {
+              const isCheckedIn = checkedInIds.includes(event.id);
+              const isExpanded = expandedEventId === event.id;
+
+              return (
+                <div
+                  key={event.id}
+                  className="rounded-lg border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  {/* Event row — click to expand */}
+                  <button
+                    className="w-full text-left p-3"
+                    onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
                   >
-                    {getEventTypeIcon(event.event_type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-1">
-                      <h4 className="text-sm font-semibold text-gray-900">{event.title}</h4>
-                      <span
-                        className="px-2 py-0.5 rounded-full text-xs font-medium ml-2"
-                        style={{ 
-                          backgroundColor: `${getEventTypeColor(event.event_type)}20`,
-                          color: getEventTypeColor(event.event_type)
-                        }}
+                    <div className="flex items-start space-x-2.5">
+                      <div
+                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
+                        style={{ backgroundColor: getEventTypeColor(event.event_type) }}
                       >
-                        {event.event_type}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 mb-2">{event.description}</p>
-                    <div className="flex items-center space-x-3 text-xs text-gray-500">
-                      <div className="flex items-center space-x-1">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{formatTime(event.start_time)} - {formatTime(event.end_time)}</span>
+                        {getEventTypeIcon(event.event_type)}
                       </div>
-                      {event.points > 0 && (
-                        <div className="flex items-center space-x-1">
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                          <span>{event.points} pts</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-1">
+                          <h4 className="text-sm font-semibold text-gray-900">{event.title}</h4>
+                          <span
+                            className="px-2 py-0.5 rounded-full text-xs font-medium ml-2 capitalize"
+                            style={{
+                              backgroundColor: `${getEventTypeColor(event.event_type)}20`,
+                              color: getEventTypeColor(event.event_type),
+                            }}
+                          >
+                            {event.event_type}
+                          </span>
                         </div>
-                      )}
-                      {event.revenue > 0 && (
-                        <div className="flex items-center space-x-1">
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                          </svg>
-                          <span>${event.revenue}</span>
+                        <div className="flex items-center space-x-3 text-xs text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{formatTime(event.start_time)} - {formatTime(event.end_time)}</span>
+                          </div>
+                          {event.points > 0 && (
+                            <div className="flex items-center space-x-1">
+                              <svg className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                              <span>{event.points} pts</span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
+                      <svg
+                        className={`w-4 h-4 text-gray-400 flex-shrink-0 mt-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
                     </div>
-                  </div>
+                  </button>
+
+                  {/* Expanded details */}
+                  {isExpanded && (
+                    <div className="px-3 pb-3 border-t border-gray-100 pt-3 space-y-3">
+                      {event.description && (
+                        <p className="text-sm text-gray-600">{event.description}</p>
+                      )}
+                      <div className="flex items-center space-x-2">
+                        {/* Check-in button */}
+                        <button
+                          onClick={() => !isCheckedIn && handleCheckIn(event.id)}
+                          disabled={isCheckedIn}
+                          className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+                          style={{
+                            backgroundColor: isCheckedIn ? '#D1FAE5' : '#10B981',
+                            color: isCheckedIn ? '#065F46' : 'white',
+                            cursor: isCheckedIn ? 'default' : 'pointer',
+                          }}
+                        >
+                          {isCheckedIn ? '✓ Checked In' : 'Check In'}
+                        </button>
+
+                        {/* Delete button (moderators only) */}
+                        {isModerator && (
+                          deleteConfirmId === event.id ? (
+                            <div className="flex space-x-1">
+                              <button
+                                onClick={() => handleDeleteEvent(event.id)}
+                                className="px-3 py-2 rounded-lg text-xs font-semibold bg-red-600 text-white"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="px-3 py-2 rounded-lg text-xs font-semibold bg-gray-200 text-gray-700"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteConfirmId(event.id)}
+                              className="px-3 py-2 rounded-lg text-sm font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -402,10 +433,8 @@ export default function CalendarView({ circleId, circleName, isModerator, isPane
         onClose={() => setShowCreateEvent(false)}
         circleId={circleId}
         circleName={circleName}
-        onEventCreated={() => {
-          // TODO: Refresh events
-          console.log('Event created');
-        }}
+        userId={userId}
+        onEventCreated={fetchEvents}
       />
     </div>
   );

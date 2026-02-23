@@ -85,7 +85,7 @@ export default function Circles() {
     try {
       await circleService.joinCircle(circle.id, user.user_id);
       await loadCircles();
-      navigate(`/circles/${circle.id}`);
+      navigate(`/circles/${circle.id}`, { state: { circle } });
     } catch (error) {
       console.error('Failed to join circle:', error);
       setErrorMessage('Failed to join circle. Please try again.');
@@ -108,7 +108,7 @@ export default function Circles() {
       setCirclePendingJoin(null);
       
       // Navigate to circle after joining
-      navigate(`/circles/${circleToNavigate.id}`);
+      navigate(`/circles/${circleToNavigate.id}`, { state: { circle: circleToNavigate } });
     } catch (error) {
       console.error('Failed to join circle:', error);
       if ((error as any).response?.status === 403) {
@@ -122,7 +122,7 @@ export default function Circles() {
   };
 
   const handleOpenCircle = (circle: Circle) => {
-    navigate(`/circles/${circle.id}`);
+    navigate(`/circles/${circle.id}`, { state: { circle } });
   };
 
   const filteredCircles = activeTab === 'explore' 

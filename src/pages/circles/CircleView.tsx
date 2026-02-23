@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { COLORS } from '../../utils/colors';
 import { Circle } from '../../types/circle';
 import { useCircleView } from '../../context/CircleViewContext';
@@ -17,44 +17,62 @@ type PanelType = 'home' | 'dashboard' | 'calendar';
 export default function CircleView() {
   const { circleId } = useParams<{ circleId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isPanelMode } = useCircleView();
   const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [activePanels, setActivePanels] = useState<PanelType[]>(['home']);
-  const [circle, setCircle] = useState<Circle | null>(null);
+  const [circle, setCircle] = useState<Circle | null>((location.state as any)?.circle ?? null);
   const [announcements, setAnnouncements] = useState<{ id: number; title: string; content: string; created_by: string; created_at: string }[]>([]);
   const [threads, setThreads] = useState<ApiThread[]>([]);
   const [channels, setChannels] = useState<ApiChannel[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showCircleSwitcher, setShowCircleSwitcher] = useState(false);
   const [showCreateThread, setShowCreateThread] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!circleId || !user?.user_id) return;
     const id = parseInt(circleId);
 
-    Promise.all([
-      circleService.getCircleDetails(id, user.user_id),
-      circleService.getAnnouncements(id),
-      circleService.getThreads(id),
-      circleService.getChannels(id),
-    ]).then(([circleData, announcementsData, threadsData, channelsData]) => {
-      setCircle(circleData);
-      setAnnouncements(
-        announcementsData.map((a) => ({
-          id: a.id,
-          title: a.title,
-          content: a.content,
-          created_by: a.user ?? '',
-          created_at: a.announced_at ?? '',
-        }))
-      );
-      setThreads(threadsData);
-      setChannels(channelsData);
-    }).catch((err) => {
-      console.error('Failed to load circle data:', err);
-    });
+    setLoadError(null);
+
+    // If circle data was passed via navigation state, skip getCircleDetails
+    const passedCircle = (location.state as any)?.circle;
+    if (passedCircle) {
+      setCircle(passedCircle);
+    } else {
+      circleService.getCircleDetails(id, user.user_id)
+        .then((circleData) => setCircle(circleData))
+        .catch((err) => {
+          console.error('Failed to load circle:', err);
+          setLoadError(`Failed to load circle: ${err?.response?.data?.detail || err?.message || 'Unknown error'}`);
+        });
+    }
+
+    // Fetch secondary data independently — failures won't block the page
+    circleService.getAnnouncements(id)
+      .then((announcementsData) => {
+        setAnnouncements(
+          announcementsData.map((a) => ({
+            id: a.id,
+            title: a.title,
+            content: a.content,
+            created_by: a.user ?? '',
+            created_at: a.announced_at ?? '',
+          }))
+        );
+      })
+      .catch((err) => console.error('Failed to load announcements:', err));
+
+    circleService.getThreads(id)
+      .then((threadsData) => setThreads(threadsData))
+      .catch((err) => console.error('Failed to load threads:', err));
+
+    circleService.getChannels(id)
+      .then((channelsData) => setChannels(channelsData))
+      .catch((err) => console.error('Failed to load channels:', err));
   }, [circleId, user?.user_id]);
 
   // Handle adding/removing panels
@@ -107,10 +125,11 @@ export default function CircleView() {
         );
       case 'calendar':
         return (
-          <CalendarView 
+          <CalendarView
             circleId={circle.id}
             circleName={circle.name}
             isModerator={circle.is_moderator}
+            userId={user?.user_id ?? 0}
             isPanel={true}
           />
         );
@@ -506,7 +525,20 @@ export default function CircleView() {
   if (!circle) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f5f5f5' }}>
-        <div className="text-lg text-gray-600">Loading circle...</div>
+        {loadError ? (
+          <div className="text-center">
+            <div className="text-lg text-red-500 mb-4">{loadError}</div>
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 rounded text-white"
+              style={{ backgroundColor: COLORS.primary }}
+            >
+              Go Back
+            </button>
+          </div>
+        ) : (
+          <div className="text-lg text-gray-600">Loading circle...</div>
+        )}
       </div>
     );
   }
@@ -616,10 +648,11 @@ export default function CircleView() {
           )}
 
           {activeTab === 'calendar' && circle && (
-            <CalendarView 
+            <CalendarView
               circleId={circle.id}
               circleName={circle.name}
               isModerator={circle.is_moderator}
+              userId={user?.user_id ?? 0}
             />
           )}
         </>
